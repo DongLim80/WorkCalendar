@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘의 주간계획 뷰어</title>
+    <style>
+        body { font-family: 'Malgun Gothic', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .header { text-align: center; background-color: #4CAF50; color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .timeline { display: flex; flex-direction: column; gap: 15px; }
+        .card { background: white; padding: 15px; border-radius: 10px; border-left: 5px solid #4CAF50; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .period { font-size: 14px; color: #888; font-weight: bold; margin-bottom: 5px; }
+        .class-name { font-size: 20px; font-weight: bold; color: #333; }
+        .schedule { font-size: 14px; color: #e74c3c; margin-top: 5px; }
+        .loading { text-align: center; padding: 50px; font-weight: bold; color: #4CAF50; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2 id="week-title" style="margin:0;">주간계획 불러오는 중...</h2>
+    </div>
+
+    <div id="timeline" class="timeline">
+        <div class="loading">데이터를 동기화하고 있습니다 ⏳</div>
+    </div>
+
+    <script>
+        // ★여기에 2단계에서 복사해둔 '웹 앱 URL'을 붙여넣으세요★
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx9gQWm8TO5v5DW3aXJT2-OUgG9xPQ_LDEVIav71MPoCWkdCNhqsuuqIZqvXQX-A0W1/exec'; 
+
+        async function fetchSchedule() {
+            try {
+                const response = await fetch(WEB_APP_URL);
+                const result = await response.json();
+                const data = result.data;
+
+                // 타이틀 업데이트 (A1:F1 셀 참조)
+                document.getElementById('week-title').innerText = `${data[0][2]} ${data[0][3]}`;
+
+                const timelineEl = document.getElementById('timeline');
+                timelineEl.innerHTML = ''; // 로딩 텍스트 제거
+
+                // 3행(월요일 1교시)부터 32행(금요일 6교시)까지 데이터 순회 (인덱스 2~31)
+                for(let i = 2; i <= 31; i++) {
+                    let period = data[i][1]; // B열(교시)
+                    let className = data[i][2]; // C열(학반)
+                    let schedule = data[i][4]; // E열(일정)
+
+                    // 학반 데이터가 있는 교시만 카드로 생성하여 보여줌
+                    if(className.trim() !== "") {
+                        const card = document.createElement('div');
+                        card.className = 'card';
+                        card.innerHTML = `
+                            <div class="period">${period}교시 수업</div>
+                            <div class="class-name">📌 ${className}</div>
+                            ${schedule ? `<div class="schedule">💡 일정: ${schedule}</div>` : ''}
+                        `;
+                        timelineEl.appendChild(card);
+                    }
+                }
+            } catch (error) {
+                document.getElementById('timeline').innerHTML = '<div class="loading" style="color:red;">데이터를 불러오는데 실패했습니다. URL을 확인해주세요.</div>';
+            }
+        }
+
+        fetchSchedule();
+    </script>
+</body>
+</html>
