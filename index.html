@@ -1,18 +1,28 @@
-<div id='calendar'></div>
-
-<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    var calendarEl = document.getElementById('calendar');
-    var calendar = new FullCalendar.Calendar(calendarEl, {
-      initialView: 'dayGridMonth', // 기본값: 월간
-      headerToolbar: {
-        left: 'prev,next today',
-        center: 'title',
-        right: 'dayGridMonth,timeGridWeek,timeGridDay' // 월/주/일 전환 버튼
-      },
-      events: '선생님의_웹앱_URL' // 1단계에서 만든 앱스 스크립트 주소
-    });
-    calendar.render();
-  });
-</script>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>학교 일정 뷰어</title>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'dayGridMonth',
+          locale: 'ko', // UI 한글화 설정
+          headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+          },
+          // 아래 URL 부분에 선생님의 앱스 스크립트 배포 주소를 입력하세요
+          events: 'https://script.google.com/macros/s/발급받은_ID/exec'
+        });
+        calendar.render();
+      });
+    </script>
+</head>
+<body>
+    <div id='calendar'></div>
+</body>
+</html>
