@@ -3,31 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>학교 일정 뷰어</title>
+    <title>학교 주간계획 & 일정 뷰어</title>
     
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
     
     <style>
-      /* 모바일에서도 깔끔하게 보이도록 약간의 여백과 폰트 설정 추가 */
+      /* 학교 현장 맞춤형 깔끔한 UI 디자인 */
       body {
         margin: 0;
-        padding: 10px;
+        padding: 12px;
         font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
-        background-color: #f8f9fa;
+        background-color: #f1f3f5;
+        color: #333333;
       }
+      
       #calendar {
         max-width: 1000px;
         margin: 0 auto;
         background-color: #ffffff;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 18px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
       }
-      /* 이벤트(수업) 블록 디자인 깔끔하게 다듬기 */
+
+      /* 구글 스프레드시트 느낌의 깔끔한 사각형 수업 블록 서식 */
       .fc-event {
         cursor: pointer;
-        padding: 2px 4px;
-        font-size: 0.9em;
+        padding: 4px 6px !important;
+        margin: 3px 2px !important;
+        font-size: 13px !important;
+        font-weight: bold !important;
+        border-radius: 4px !important;
+        border: none !important;
+        background-color: #e8f5e9 !important; /* 연한 초록색 바탕 */
+        color: #1b5e20 !important;            /* 짙은 초록색 글씨 */
+        box-shadow: inset 2px 0 0 #4caf50;    /* 왼쪽에 깔끔한 초록 선 포인트 */
+      }
+
+      /* 주간/일간 보기에서 격자 칸이 모바일에서도 시원하게 보이도록 최소 높이 조절 */
+      .fc .fc-daygrid-day-frame {
+        min-height: 120px;
+      }
+
+      /* 상단 타이틀 및 버튼 서식 조정 */
+      .fc .fc-toolbar-title {
+        font-size: 1.3em !important;
+        font-weight: bold;
+        color: #2b2b2b;
+      }
+      
+      .fc .fc-button-primary {
+        background-color: #4caf50 !important;
+        border-color: #4caf50 !important;
+      }
+      
+      .fc .fc-button-primary:hover {
+        background-color: #388e3c !important;
+        border-color: #388e3c !important;
+      }
+
+      .fc .fc-button-active {
+        background-color: #2e7d32 !important;
+        border-color: #2e7d32 !important;
       }
     </style>
 
@@ -35,10 +72,10 @@
       document.addEventListener('DOMContentLoaded', function() {
         var calendarEl = document.getElementById('calendar');
         var calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: 'dayGridMonth',
-          locale: 'ko', // 기본 한국어 설정
+          initialView: 'dayGridMonth', // 최초 진입 시 화면 (월 보기)
+          locale: 'ko',               // 한국어 및 한국 기본 날짜 포맷 적용
           
-          // 1. 상단 버튼 한글 변환
+          // 1, 2번 해결: 상단 버튼 컨트롤 텍스트 완벽 한글화
           buttonText: {
             today: '오늘',
             month: '월',
@@ -46,17 +83,20 @@
             day: '일'
           },
 
+          // 4, 5번 해결: 왼쪽 시간축(timeGrid)을 완전히 없애기 위해 모두 dayGrid 방식으로 결합
           headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            // 3. 주/일 보기에서 왼쪽 시간축을 없애고 구글 시트처럼 쌓이도록 'dayGrid' 사용
             right: 'dayGridMonth,dayGridWeek,dayGridDay' 
           },
 
-          // 2. 이벤트 앞의 시간(예: 오전 9시) 숨기기
+          // 3번 해결: 모든 일정 블록에서 거추장스러운 "오전 9시" 등의 시간 표시 강제 제거
           displayEventTime: false, 
 
-          // 선생님의 데이터 연동 URL
+          // 주말(토, 일)을 캘린더 화면에서 숨기고 평일(월~금)만 집중 배치 (필요 없으시면 이 줄을 지우시면 됩니다)
+          weekends: false, 
+
+          // 구글 스프레드시트(Apps Script 배포 서버) 연동 API 주소
           events: 'https://script.google.com/macros/s/AKfycbz9C5lYkD2FtFIF9vfsvmo1vKRY8sRqaePHVJZcxMxPVNqnyjYlb_IPGBDIsjOa7ZKD/exec'
         });
         calendar.render();
