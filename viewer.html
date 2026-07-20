@@ -3,60 +3,176 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>오늘의 주간계획 뷰어</title>
+  <title>모바일 주간계획 뷰어</title>
   <style>
-    body { font-family: 'Malgun Gothic', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
-    .header { text-align: center; background-color: #4CAF50; color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .timeline { display: flex; flex-direction: column; gap: 15px; }
-    .card { background: white; padding: 15px; border-radius: 10px; border-left: 5px solid #4CAF50; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .period { font-size: 14px; color: #888; font-weight: bold; margin-bottom: 5px; }
-    .class-name { font-size: 20px; font-weight: bold; color: #333; }
-    .schedule { font-size: 14px; color: #e74c3c; margin-top: 5px; }
-    .loading { text-align: center; padding: 50px; font-weight: bold; color: #4CAF50; }
+    /* 학교 교실 환경에 맞춘 스프레드시트 스타일 모바일 디자인 */
+    body {
+      margin: 0;
+      padding: 10px;
+      font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+      background-color: #f8f9fa;
+      color: #333333;
+    }
+    .header {
+      text-align: center;
+      background-color: #4CAF50;
+      color: white;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .header h2 { margin: 0; font-size: 18px; }
+    .header p { margin: 5px 0 0 0; font-size: 13px; color: #e8f5e9; }
+
+    /* 구글 시트 스타일의 시간표 격자 테이블 */
+    .timetable-container {
+      width: 100%;
+      overflow-x: auto; /* 모바일에서 가로 스크롤 지원 */
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .sheet-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: center;
+      min-width: 600px; /* 모바일에서 격자가 찌그러지지 않도록 최소 가로폭 고정 */
+    }
+    .sheet-table th {
+      background-color: #e8f5e9;
+      color: #1b5e20;
+      font-weight: bold;
+      padding: 10px 6px;
+      border: 1px solid #c8e6c9;
+    }
+    .sheet-table td {
+      padding: 10px 6px;
+      border: 1px solid #e0e0e0;
+      height: 50px;
+      vertical-align: middle;
+      font-weight: bold;
+    }
+    /* 교시 열 스타일 */
+    .period-col {
+      background-color: #f5f5f5;
+      color: #555555;
+      width: 65px;
+    }
+    /* 학사일정 행 스타일 */
+    .schedule-row {
+      background-color: #fffde7; /* 연노란색 배경 강조 */
+      color: #c62828;
+      font-size: 12px;
+    }
+    /* 수업이 차 있는 방 내부 박스 */
+    .class-box {
+      background-color: #e8f5e9;
+      color: #1b5e20;
+      padding: 4px;
+      border-radius: 4px;
+      border-left: 3px solid #4caf50;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      font-weight: bold;
+      color: #4CAF50;
+    }
   </style>
 </head>
 <body>
+
   <div class="header">
-    <h2 id="week-title" style="margin:0;">주간계획 불러오는 중...</h2>
+    <h2 id="week-title">주간계획표 로딩 중...</h2>
+    <p id="semester-info">-학기 -주</p>
   </div>
-  <div id="timeline" class="timeline">
-    <div class="loading">데이터를 동기화하고 있습니다 ⏳</div>
+
+  <div class="timetable-container">
+    <div id="loading-view" class="loading">구글 스프레드시트와 동기화 중입니다 ⏳</div>
+    <table class="sheet-table" id="timetable-table" style="display: none;">
+      <thead>
+        <tr id="table-header">
+          <th>교시</th>
+          </tr>
+      </thead>
+      <tbody id="table-body">
+        </tbody>
+    </table>
   </div>
 
   <script>
+    // 선생님의 구글 웹 앱 URL 창구
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbztEDUhTVL_1zXG-r69oPNkpG10AgxAxtUbhzBzhV9TQ0y_RBdV5Q-K4MVn0NKEbZCy/exec'; 
 
-    async function fetchSchedule() {
+    async function fetchWeeklyPlan() {
       try {
         const response = await fetch(WEB_APP_URL);
         const result = await response.json();
-        const data = result.data;
+        const sheetData = result.data; // A1:F32 데이터
 
-        document.getElementById('week-title').innerText = `${data[0][2]} ${data[0][3]}`;
-        const timelineEl = document.getElementById('timeline');
-        timelineEl.innerHTML = ''; 
+        // 1. 상단 타이틀 바 세팅 (구글 시트의 F1, E1 셀 정보 매핑)
+        document.getElementById('week-title').innerText = sheetData[0][5]; // F1 셀: 날짜 범위
+        document.getElementById('semester-info').innerText = sheetData[0][4]; // E1 셀: 학기 및 주차 정보
 
-        for(let i = 2; i <= 31; i++) {
-          let period = data[i][1]; 
-          let className = data[i][2]; 
-          let schedule = data[i][4]; 
-
-          if(className && className.trim() !== "") {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
-              <div class="period">${period}교시 수업</div>
-              <div class="class-name">📌 ${className}</div>
-              ${schedule ? `<div class="schedule">💡 일정: ${schedule}</div>` : ''}
-            `;
-            timelineEl.appendChild(card);
-          }
+        // 2. 요일 날짜 헤더 동적 생성 (시트의 3, 9, 15, 21, 27행의 날짜/요일 조합)
+        const headerRow = document.getElementById('table-header');
+        const dayLabels = ['월', '화', '수', '목', '금'];
+        
+        for (let i = 0; i < 5; i++) {
+          let baseRowIdx = 2 + (i * 6); // 월(2), 화(8), 수(14)... 행 인덱스
+          let monthText = sheetData[baseRowIdx][0]; // A열 월
+          let dateText = sheetData[baseRowIdx+2][0]; // A열 일
+          
+          let th = document.createElement('th');
+          th.innerText = `${monthText} ${dateText} (${dayLabels[i]})`;
+          headerRow.appendChild(th);
         }
+
+        const tbody = document.getElementById('table-body');
+
+        // 3. [기능] 학사일정(E열) 행 먼저 가로로 생성
+        let scheduleHtml = `<tr class="schedule-row"><td class="period-col">학사일정</td>`;
+        for (let i = 0; i < 5; i++) {
+          let baseRowIdx = 2 + (i * 6);
+          let scheduleText = sheetData[baseRowIdx][4] || ''; // E열 학사일정
+          scheduleHtml += `<td>${scheduleText}</td>`;
+        }
+        scheduleHtml += '</tr>';
+        tbody.innerHTML += scheduleHtml;
+
+        // 4. [기능] 1교시부터 6교시까지 행 단위로 시트 데이터 재조립 (가로 요일 정렬)
+        for (let period = 1; period <= 6; period++) {
+          let rowHtml = `<tr><td class="period-col">${period}교시</td>`;
+          
+          for (let dayIdx = 0; dayIdx < 5; dayIdx++) {
+            let baseRowIdx = 2 + (dayIdx * 6); // 요일별 시작 행
+            let targetCellIdx = baseRowIdx + (period - 1); // 교시별 행 위치
+            let className = sheetData[targetCellIdx][2] || ''; // C열 학반 정보
+            
+            rowHtml += '<td>';
+            if (className.trim() !== "") {
+              rowHtml += `<div class="class-box">${className}</div>`;
+            }
+            rowHtml += '</td>';
+          }
+          
+          rowHtml += '</tr>';
+          tbody.innerHTML += rowHtml;
+        }
+
+        // 로딩 화면 숨기고 주간계획 테이블 노출
+        document.getElementById('loading-view').style.display = 'none';
+        document.getElementById('timetable-table').style.display = 'table';
+
       } catch (error) {
-        document.getElementById('timeline').innerHTML = '<div class="loading" style="color:red;">데이터를 불러오는데 실패했습니다. URL을 확인해주세요.</div>';
+        console.error(error);
+        document.getElementById('loading-view').innerHTML = '<span style="color:red;">구글 시트 데이터를 읽어오지 못했습니다. Apps Script 배포 버전을 확인해 주세요!</span>';
       }
     }
-    fetchSchedule();
+
+    fetchWeeklyPlan();
   </script>
 </body>
 </html>
