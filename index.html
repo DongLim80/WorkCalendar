@@ -19,7 +19,7 @@
     .fc .fc-button-primary:hover { background-color: #388e3c !important; border-color: #388e3c !important; }
     .fc .fc-button-active { background-color: #2e7d32 !important; border-color: #2e7d32 !important; }
 
-    /* ★ [핵심] 일정 내부의 시간 요소를 CSS 레벨에서 강제로 숨겨 화면 출력을 원천 차단 */
+    /* 일정 내부의 시간 요소를 CSS 레벨에서 강제로 숨겨 화면 출력을 원천 차단 */
     .fc-event-time { display: none !important; }
     .fc-timegrid-event .fc-event-time { display: none !important; }
     .fc-list-event-time { display: none !important; }
@@ -27,17 +27,17 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      console.log("✅ V5 버튼 및 시간 최적화 코드가 로드되었습니다!");
+      console.log("✅ V6 특수문자 완전 제거 버전이 로드되었습니다!");
       
       var calendarEl = document.getElementById('calendar');
       var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         
-        // 언어 팩 충돌 우회를 위해 개별 요일 설정을 수동 고정합니다.
+        // 언어 팩 충돌 우회를 위해 개별 요일 설정을 수동 고정
         dayPopoverFormat: { year: 'numeric', month: 'long', day: 'numeric' },
         dayHeaderFormat: { weekday: 'short' },
         
-        // 1, 2번 해결: 상단 버튼 컨트롤 명칭 강제 한글화
+        // 상단 버튼 컨트롤 명칭 강제 한글화
         buttonText: {
           today: '오늘',
           month: '월',
@@ -45,18 +45,18 @@
           day: '일'
         },
 
-        // 4, 5번 해결: 왼쪽 시간축을 제거하고 시트처럼 쌓이도록 dayGrid 뷰 결합
+        // 왼쪽 시간축을 제거하고 시트처럼 쌓이도록 dayGrid 뷰 결합
         headerToolbar: {
           left: 'prev,next today',
           center: 'title',
           right: 'dayGridMonth,dayGridWeek,dayGridDay' 
         },
 
-        // 3번 해결: 기본 시간 표시 기능 끄기
+        // 기본 시간 표시 기능 끄기
         displayEventTime: false, 
         weekends: false, 
 
-        // 데이터가 화면에 그려질 때마다 타이틀 앞에 남은 흔적 시간 문자열을 한 번 더 청소하는 방어 로직
+        // 타이틀 앞 시간 문자열 청소 방어 로직
         eventContent: function(arg) {
           return { html: '<div class="fc-event-main-inside">' + arg.event.title + '</div>' };
         },
