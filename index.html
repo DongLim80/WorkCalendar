@@ -2,99 +2,76 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>학교 모바일 주간계획표</title>
   <style>
-    /* 전체 레이아웃 및 모바일 최적화 */
-    body { font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 10px; background-color: #f4f6f8; color: #111; }
-    .container { max-width: 900px; margin: 0 auto; background: #fff; padding: 12px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    body { font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; background: #f4f6f9; margin: 0; padding: 15px; color: #333; }
     
-    /* 상단 컨트롤러 (월/주/일, 이동 버튼) */
-    .menu-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 8px; }
-    .nav-buttons button, .view-tabs button { background: #fff; border: 1px solid #ccc; padding: 6px 12px; cursor: pointer; font-weight: bold; border-radius: 4px; font-size: 13px; }
-    .view-tabs button.active { background-color: #4CAF50; color: #fff; border-color: #4CAF50; }
-    
-    /* 타이틀 */
-    .title-area { text-align: center; margin-bottom: 12px; }
-    .title-area h2 { margin: 0; font-size: 20px; font-weight: 800; }
-    
-    /* 표(Table) 가로 스크롤 및 너비 최적화 */
-    .table-wrapper { width: 100%; overflow-x: auto; }
-    .plan-table { width: 100%; border-collapse: collapse; text-align: center; table-layout: fixed; min-width: 600px; }
-    .plan-table th, .plan-table td { border: 1px solid #000; padding: 4px; font-size: 12px; word-break: keep-all; vertical-align: middle; }
-    .bg-gray-header { background-color: #e2e2e2; font-weight: bold; }
-    
-    /* 컬럼 너비 최적화 */
-    .col-day { width: 35px; }   /* 구분(월,화) */
-    .col-date { width: 50px; }  /* 날짜 */
-    .col-period { width: 40px;} /* 교시 */
-    .col-class { width: 50px;}  /* 학반 */
-    .col-schedule { width: auto; text-align: left; vertical-align: top; padding: 6px; line-height: 1.4; } /* 일정 */
-    .col-memo { width: 30%; }   /* 메모 */
+    /* 상단 네비게이션 컨트롤 */
+    .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+    .nav-group { display: flex; align-items: center; gap: 5px; }
+    .nav-btn, .view-btn { padding: 8px 14px; border: 1px solid #d1d5db; background: white; border-radius: 6px; cursor: pointer; font-weight: bold; color: #4b5563; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .nav-btn:hover, .view-btn:hover { background: #f3f4f6; }
+    .view-btn.active { background: #4caf50; color: white; border-color: #4caf50; }
+    .date-title { font-weight: 900; font-size: 17px; margin: 0 10px; color: #1f2937; }
 
-    /* 학반 강조 및 메모 텍스트 박스 */
-    .class-box { background-color: #e8f5e9; padding: 3px; border-radius: 4px; font-weight: bold; color: #1b5e20; display: inline-block; }
-    .memo-input { width: 100%; height: 90px; border: none; resize: none; font-family: inherit; font-size: 12px; box-sizing: border-box; background: transparent; outline: none; }
-    .memo-input:focus { background-color: #fff9c4; border: 1px dashed #fbc02d; }
+    /* 모바일 가로 짤림 방지를 위한 반응형 래퍼 */
+    .table-wrapper { width: 100%; overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    
+    /* 주/일 공통 테이블 서식 */
+    table { width: 100%; min-width: 600px; border-collapse: collapse; text-align: center; font-size: 14px; }
+    th, td { border: 1px solid #cbd5e1; padding: 10px; }
+    th { background-color: #f1f5f9; font-weight: bold; color: #334155; }
+    
+    /* 메모 입력칸 서식 */
+    .memo-input { width: 100%; box-sizing: border-box; background: transparent; border: none; border-bottom: 2px solid transparent; padding: 6px; font-family: inherit; font-size: 13px; outline: none; transition: 0.3s; }
+    .memo-input:focus { border-bottom: 2px solid #4caf50; background: #fff; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    
+    .date-cell { font-weight: bold; background: #f8fafc; }
+    .event-cell { white-space: pre-line; text-align: left; font-size: 13px; color: #b91c1c; font-weight: bold; }
+    
+    /* 월(달력) 보기 서식 */
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #cbd5e1; border: 1px solid #cbd5e1; min-width: 600px; }
+    .cal-header { background: #f1f5f9; font-weight: bold; padding: 10px; text-align: center; color: #334155; }
+    .cal-cell { background: white; min-height: 100px; padding: 8px; text-align: left; font-size: 12px; }
+    .cal-cell.today { background: #e8f5e9; }
+    .cal-cell.disabled { background: #f8fafc; color: #94a3b8; }
+    .cal-date { font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+    .cal-event { color: #b91c1c; margin-bottom: 5px; font-weight: bold; line-height: 1.2; }
+    .cal-class { color: #0369a1; font-size: 11px; line-height: 1.4; }
 
-    /* 월간 달력(Grid) UI */
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #bbb; border: 1px solid #bbb; }
-    .cal-header { background: #f2f2f2; text-align: center; font-weight: bold; padding: 6px 0; font-size: 12px; }
-    .cal-cell { background: #fff; min-height: 70px; padding: 4px; display: flex; flex-direction: column; }
-    .cal-cell.empty { background: #f9f9f9; }
-    .cal-date { font-size: 12px; font-weight: bold; margin-bottom: 4px; display: flex; justify-content: space-between; }
-    .cal-evt { font-size: 10px; background: #e8f5e9; color: #1b5e20; margin-bottom: 2px; padding: 2px 4px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    /* 일(하루) 보기 전용 확대한 서식 */
+    .day-table { min-width: 100%; font-size: 16px; }
+    .day-table th, .day-table td { padding: 16px; }
+    .day-table .memo-input { font-size: 15px; }
 
-    .loading-container { text-align: center; padding: 30px; font-weight: bold; color: #4CAF50; }
+    /* 로딩 인디케이터 */
+    #loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 15px 30px; border-radius: 30px; font-weight: bold; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- 컨트롤 패널 -->
-    <div class="menu-bar">
-      <div class="nav-buttons">
-        <button id="btn-prev">◀</button>
-        <button id="btn-today">오늘</button>
-        <button id="btn-next">▶</button>
-      </div>
-      <div class="view-tabs">
-        <button class="btn-tab" id="tab-month">월</button>
-        <button class="btn-tab active" id="tab-week">주</button>
-        <button class="btn-tab" id="tab-day">일</button>
-      </div>
+  
+  <div class="controls">
+    <div class="nav-group">
+      <button id="btn-prev" class="nav-btn" onclick="navigate(-1)">◀</button>
+      <button id="btn-today" class="nav-btn" onclick="navigate(0)">오늘</button>
+      <button id="btn-next" class="nav-btn" onclick="navigate(1)">▶</button>
+      <span id="date-title" class="date-title">로딩중...</span>
     </div>
-
-    <!-- 타이틀 -->
-    <div class="title-area">
-      <h2 id="main-title">로딩 중...</h2>
-    </div>
-
-    <!-- 데이터 출력 영역 -->
-    <div id="status-loading" class="loading-container">데이터 동기화 중... ⏳</div>
-    
-    <!-- 1. 월간 달력 뷰 -->
-    <div id="view-month" style="display: none;"></div>
-
-    <!-- 2. 주간 & 일간 공통 테이블 뷰 -->
-    <div id="view-table-wrapper" class="table-wrapper" style="display: none;">
-      <table class="plan-table">
-        <thead>
-          <tr>
-            <th class="bg-gray-header col-day">구분</th>
-            <th class="bg-gray-header col-date">날짜</th>
-            <th class="bg-gray-header col-period">교시</th>
-            <th class="bg-gray-header col-class">학반</th>
-            <th class="bg-gray-header col-schedule">일정</th>
-            <th class="bg-gray-header col-memo">메모 (자동저장)</th>
-          </tr>
-        </thead>
-        <tbody id="view-tbody">
-          <!-- 스크립트가 조립하여 삽입 -->
-        </tbody>
-      </table>
+    <div class="nav-group view-toggles">
+      <button id="btn-month" class="view-btn" onclick="changeView('month')">월</button>
+      <button id="btn-week" class="view-btn active" onclick="changeView('week')">주</button>
+      <button id="btn-day" class="view-btn" onclick="changeView('day')">일</button>
     </div>
   </div>
 
+  <div class="table-wrapper" id="content-container">
+    <!-- 자바스크립트가 데이터를 받아와 이곳에 표를 그립니다 -->
+  </div>
+  
+  <div id="loading">데이터 동기화 중...</div>
+
+  <!-- 기능 로직 스크립트 연결 -->
   <script src="script.js"></script>
 </body>
 </html>
