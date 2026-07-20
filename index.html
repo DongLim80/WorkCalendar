@@ -8,46 +8,68 @@
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
   
   <style>
-    body { margin: 0; padding: 12px; font-family: 'Malgun Gothic', sans-serif; background-color: #f1f3f5; }
+    body { margin: 0; padding: 12px; font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; background-color: #f1f3f5; }
     #calendar { max-width: 1000px; margin: 0 auto; background-color: #ffffff; padding: 18px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    
+    /* 학교 현장 맞춤형 이벤트 블록 서식 */
     .fc-event { cursor: pointer; padding: 4px 6px !important; margin: 3px 2px !important; font-size: 13px !important; font-weight: bold !important; border-radius: 4px !important; border: none !important; background-color: #e8f5e9 !important; color: #1b5e20 !important; box-shadow: inset 2px 0 0 #4caf50; }
     .fc .fc-daygrid-day-frame { min-height: 120px; }
     .fc .fc-toolbar-title { font-size: 1.3em !important; font-weight: bold; color: #2b2b2b; }
     .fc .fc-button-primary { background-color: #4caf50 !important; border-color: #4caf50 !important; }
     .fc .fc-button-primary:hover { background-color: #388e3c !important; border-color: #388e3c !important; }
     .fc .fc-button-active { background-color: #2e7d32 !important; border-color: #2e7d32 !important; }
+
+    /* ★ [핵심] 일정 내부의 시간 요소를 CSS 레벨에서 강제로 숨겨 화면 출력을 원천 차단 */
+    .fc-event-time { display: none !important; }
+    .fc-timegrid-event .fc-event-time { display: none !important; }
+    .fc-list-event-time { display: none !important; }
   </style>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      console.log("✅ V4 구글 최적화 코드가 로드되었습니다!");
+      console.log("✅ V5 버튼 및 시간 최적화 코드가 로드되었습니다!");
       
       var calendarEl = document.getElementById('calendar');
       var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
-        locale: 'ko',
-        buttonText: { today: '오늘', month: '월', week: '주', day: '일' },
-        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,dayGridWeek,dayGridDay' },
+        
+        // 언어 팩 충돌 우회를 위해 개별 요일 설정을 수동 고정합니다.
+        dayPopoverFormat: { year: 'numeric', month: 'long', day: 'numeric' },
+        dayHeaderFormat: { weekday: 'short' },
+        
+        // 1, 2번 해결: 상단 버튼 컨트롤 명칭 강제 한글화
+        buttonText: {
+          today: '오늘',
+          month: '월',
+          week: '주',
+          day: '일'
+        },
+
+        // 4, 5번 해결: 왼쪽 시간축을 제거하고 시트처럼 쌓이도록 dayGrid 뷰 결합
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,dayGridWeek,dayGridDay' 
+        },
+
+        // 3번 해결: 기본 시간 표시 기능 끄기
         displayEventTime: false, 
         weekends: false, 
+
+        // 데이터가 화면에 그려질 때마다 타이틀 앞에 남은 흔적 시간 문자열을 한 번 더 청소하는 방어 로직
+        eventContent: function(arg) {
+          return { html: '<div class="fc-event-main-inside">' + arg.event.title + '</div>' };
+        },
         
-        // 구글 CORS 우회를 위한 커스텀 데이터 요청 함수
+        // 구글 스프레드시트 데이터 연동
         events: function(info, successCallback, failureCallback) {
           var url = 'https://script.google.com/macros/s/AKfycbztEDUhTVL_1zXG-r69oPNkpG10AgxAxtUbhzBzhV9TQ0y_RBdV5Q-K4MVn0NKEbZCy/exec';
           var fetchUrl = url + '?start=' + info.startStr + '&end=' + info.endStr;
           
           fetch(fetchUrl)
-            .then(function(response) {
-              return response.json();
-            })
-            .then(function(data) {
-              successCallback(data);
-            })
-            .catch(function(error) {
-              console.error('CORS 에러 발생:', error);
-              alert('데이터를 불러오지 못했습니다. 앱스 스크립트 배포 권한이 "모든 사용자"로 되어 있는지 확인해주세요!');
-              failureCallback(error);
-            });
+            .then(function(response) { return response.json(); })
+            .then(function(data) { successCallback(data); })
+            .catch(function(error) { failureCallback(error); });
         }
       });
       calendar.render();
