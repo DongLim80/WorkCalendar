@@ -1,6 +1,6 @@
 // ★ 선생님의 최신 구글 웹 앱 URL을 입력했습니다.
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbztEDUhTVL_1zXG-r69oPNkpG10AgxAxtUbhzBzhV9TQ0y_RBdV5Q-K4MVn0NKEbZCy/exec';
-
+                
 let baseDate = new Date(); // 화면에 띄울 기준 날짜
 let currentView = 'week';  // 기본 뷰 '주'
 let viewData = { events: [], memos: {} }; // 서버에서 가져올 데이터 바구니
