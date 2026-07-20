@@ -20,7 +20,7 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      console.log("✅ V3 깨끗한 코드가 정상 로드되었습니다!");
+      console.log("✅ V4 구글 최적화 코드가 로드되었습니다!");
       
       var calendarEl = document.getElementById('calendar');
       var calendar = new FullCalendar.Calendar(calendarEl, {
@@ -30,7 +30,25 @@
         headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,dayGridWeek,dayGridDay' },
         displayEventTime: false, 
         weekends: false, 
-        events: 'https://script.google.com/macros/s/AKfycbz9C5lYkD2FtFIF9vfsvmo1vKRY8sRqaePHVJZcxMxPVNqnyjYlb_IPGBDIsjOa7ZKD/exec'
+        
+        // 구글 CORS 우회를 위한 커스텀 데이터 요청 함수
+        events: function(info, successCallback, failureCallback) {
+          var url = 'https://script.google.com/macros/s/AKfycbztEDUhTVL_1zXG-r69oPNkpG10AgxAxtUbhzBzhV9TQ0y_RBdV5Q-K4MVn0NKEbZCy/exec';
+          var fetchUrl = url + '?start=' + info.startStr + '&end=' + info.endStr;
+          
+          fetch(fetchUrl)
+            .then(function(response) {
+              return response.json();
+            })
+            .then(function(data) {
+              successCallback(data);
+            })
+            .catch(function(error) {
+              console.error('CORS 에러 발생:', error);
+              alert('데이터를 불러오지 못했습니다. 앱스 스크립트 배포 권한이 "모든 사용자"로 되어 있는지 확인해주세요!');
+              failureCallback(error);
+            });
+        }
       });
       calendar.render();
     });
