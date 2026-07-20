@@ -3,97 +3,166 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>학교 주간계획 & 일정 뷰어</title>
-  
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-  
+  <title>학교 주간계획표</title>
   <style>
-    body { margin: 0; padding: 12px; font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; background-color: #f1f3f5; }
-    #calendar { max-width: 1000px; margin: 0 auto; background-color: #ffffff; padding: 18px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    
-    /* 학교 현장 맞춤형 이벤트 블록 서식 */
-    .fc-event {
-      cursor: pointer;
-      padding: 6px !important;
-      margin: 3px !important;
-      font-size: 14px !important;
-      font-weight: bold !important;
-      border-radius: 6px !important;
-      border: none !important;
-      background-color: #e8f5e9 !important;
-      color: #1b5e20 !important;
-      box-shadow: inset 4px 0 0 #4caf50;
+    /* 교무실에서 보는 깔끔한 인쇄용 표 스타일 */
+    body {
+      font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+      margin: 0;
+      padding: 15px;
+      background-color: #f8f9fa;
+      color: #000;
     }
     
-    .fc .fc-daygrid-day-frame { min-height: 120px; }
-    .fc .fc-toolbar-title { font-size: 1.4em !important; font-weight: bold; color: #2b2b2b; }
-    .fc .fc-button-primary { background-color: #4caf50 !important; border-color: #4caf50 !important; }
-    .fc .fc-button-primary:hover { background-color: #388e3c !important; border-color: #388e3c !important; }
-    .fc .fc-button-active { background-color: #2e7d32 !important; border-color: #2e7d32 !important; }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    /* 상단 제목 영역 */
+    .title-area {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .title-area h2 {
+      margin: 0;
+      font-size: 24px;
+      color: #333;
+    }
+    .title-area p {
+      margin: 5px 0 0 0;
+      color: #666;
+      font-size: 15px;
+    }
+
+    /* 모바일 가로 스크롤 지원 */
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    /* 표(Table) 디자인 - 사진과 동일하게 구현 */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+      min-width: 600px; /* 모바일에서 글씨가 깨지지 않게 최소 너비 보장 */
+      font-size: 14px;
+    }
     
-    /* 캘린더 내부 불필요한 점(dot) 요소 강제 숨김 */
-    .fc-daygrid-event-dot { display: none !important; }
+    th, td {
+      border: 1px solid #444; /* 또렷한 검은색 테두리 */
+      padding: 12px 6px;
+    }
+    
+    /* 회색 음영 처리 (교시, 요일 헤더 등) */
+    .bg-gray {
+      background-color: #f2f2f2;
+      font-weight: bold;
+    }
+    
+    .period-col {
+      width: 60px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 50px;
+      font-weight: bold;
+      color: #2e7d32;
+    }
   </style>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log("    V8 버튼 및 시간 숨김 마스터 코드가 로드되었습니다!");
-      
-      var calendarEl = document.getElementById('calendar');
-      var calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'ko', // 기본 한국어 패키지 선언
-        
-        // [★핵심 1] 뷰 껍데기마다 한글 버튼 텍스트 강제 수동 매핑
-        buttonText: { today: '오늘' },
-        views: {
-          dayGridMonth: { buttonText: '월' },
-          dayGridWeek: { buttonText: '주' },
-          dayGridDay: { buttonText: '일' }
-        },
-
-        // 왼쪽 시간축을 제거하고 시트처럼 쌓이도록 dayGrid 뷰 결합
-        headerToolbar: {
-          left: 'prev,next today',
-          center: 'title',
-          right: 'dayGridMonth,dayGridWeek,dayGridDay' 
-        },
-
-        displayEventTime: false, 
-        weekends: false, 
-        
-        // 구글 스프레드시트 데이터 연동 창구
-        events: function(info, successCallback, failureCallback) {
-          var url = 'https://script.google.com/macros/s/AKfycbztEDUhTVL_1zXG-r69oPNkpG10AgxAxtUbhzBzhV9TQ0y_RBdV5Q-K4MVn0NKEbZCy/exec';
-          var fetchUrl = url + '?start=' + info.startStr + '&end=' + info.endStr;
-          
-          fetch(fetchUrl)
-            .then(function(response) { return response.json(); })
-            .then(function(data) { 
-              
-              // [★핵심 2] 구글에서 받아온 데이터의 시간 출력을 원천 차단하기 위해 
-              // 모든 일정을 '종일 일정(allDay)' 속성으로 변환하여 9a 글씨를 지워버립니다.
-              var processedData = data.map(function(ev) {
-                ev.allDay = true;
-                return ev;
-              });
-              
-              successCallback(processedData); 
-            })
-            .catch(function(error) { failureCallback(error); });
-        },
-
-        // 긴 수업 내용 글씨가 카드 밖으로 잘리지 않고 줄바꿈 되도록 처리
-        eventContent: function(arg) {
-          return { html: '<div style="white-space: normal; overflow: hidden;">' + arg.event.title + '</div>' };
-        }
-      });
-      
-      calendar.render();
-    });
-  </script>
 </head>
 <body>
-  <div id="calendar"></div>
+
+  <div class="container">
+    <div class="title-area">
+      <h2 id="week-title">주간계획표 불러오는 중...</h2>
+      <p id="date-range"></p>
+    </div>
+
+    <div class="table-wrapper">
+      <div id="loading" class="loading">데이터를 동기화하고 있습니다 ⏳</div>
+      <table id="schedule-table" style="display: none;">
+        <thead>
+          <tr id="thead-row">
+            </tr>
+        </thead>
+        <tbody id="tbody-area">
+          </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // 선생님의 구글 웹 앱 URL (FullCalendar 파라미터가 없으면 시트 데이터를 반환함)
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbztEDUhTVL_1zXG-r69oPNkpG10AgxAxtUbhzBzhV9TQ0y_RBdV5Q-K4MVn0NKEbZCy/exec';
+
+    async function fetchSchedule() {
+      try {
+        const response = await fetch(WEB_APP_URL);
+        const result = await response.json();
+        const data = result.data; // 구글 시트의 A1:F32 데이터
+
+        // 1. 타이틀 세팅 (C1, D1, F1 셀 활용)
+        const monthStr = data[0][2]; // C1 (예: 6월)
+        const weekStr = data[0][3];  // D1 (예: 4주)
+        const dateRange = data[0][5]; // F1 (예: 6.22(월) - 6.26(금))
+        
+        document.getElementById('week-title').innerText = `${monthStr} ${weekStr}`;
+        document.getElementById('date-range').innerText = dateRange;
+
+        // 2. 표 헤더(요일) 세팅
+        let theadHtml = `<th class="bg-gray period-col">교시</th>`;
+        for (let i = 0; i < 5; i++) {
+          let baseIdx = 2 + (i * 6);
+          // '6월' -> '6', '22일' -> '22' 로 변환하여 '6.22(월)' 형태로 조립
+          let m = data[baseIdx][0].replace(/[^0-9]/g, ''); 
+          let d = data[baseIdx+2][0].replace(/[^0-9]/g, ''); 
+          let day = data[baseIdx+4][0]; 
+          
+          theadHtml += `<th class="bg-gray">${m}.${d}${day}</th>`;
+        }
+        document.getElementById('thead-row').innerHTML = theadHtml;
+
+        // 3. 학사일정 행 세팅
+        let tbodyHtml = `<tr><td class="bg-gray">학사일정</td>`;
+        for (let i = 0; i < 5; i++) {
+          let baseIdx = 2 + (i * 6);
+          let schedule = data[baseIdx][4] || ''; // E열 학사일정
+          // 여러 줄 일정 처리를 위해 엔터를 <br>로 변환
+          tbodyHtml += `<td>${schedule.replace(/\n/g, '<br>')}</td>`;
+        }
+        tbodyHtml += `</tr>`;
+
+        // 4. 1~6교시 행 세팅
+        for (let p = 1; p <= 6; p++) {
+          tbodyHtml += `<tr><td class="bg-gray">${p}교시</td>`;
+          for (let i = 0; i < 5; i++) {
+            let baseIdx = 2 + (i * 6);
+            let className = data[baseIdx + p - 1][2] || ''; // C열 학반 정보
+            tbodyHtml += `<td>${className}</td>`;
+          }
+          tbodyHtml += `</tr>`;
+        }
+        
+        document.getElementById('tbody-area').innerHTML = tbodyHtml;
+        
+        // 로딩 숨기고 표 보여주기
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('schedule-table').style.display = 'table';
+
+      } catch (error) {
+        console.error("데이터 로드 에러:", error);
+        document.getElementById('loading').innerHTML = '<span style="color:red;">데이터를 불러오지 못했습니다. 앱스 스크립트 연결을 확인해주세요.</span>';
+      }
+    }
+
+    // 페이지가 열리면 즉시 데이터 불러오기 실행
+    window.onload = fetchSchedule;
+  </script>
 </body>
 </html>
