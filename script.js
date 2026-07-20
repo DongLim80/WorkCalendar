@@ -1,7 +1,7 @@
 /**
  * ★ 주의: 반드시 1단계에서 새로 배포한 웹 앱 URL을 따옴표 안에 넣어주세요!
  */
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbztEDUhTVL_1zXG-r69oPNkpG10AgxAxtUbhzBzhV9TQ0y_RBdV5Q-K4MVn0NKEbZCy/exec';
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbztEDUhTVL_1zXG-r69oPNkpG10AgxAxtUbhzBzhV9TQ0y_RBdV5Q-K4MVn0NKEbZCy/exec";
 
 let currentDate = new Date();
 let currentView = 'week'; // 기본 보기는 '주'
