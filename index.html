@@ -12,37 +12,44 @@
     #calendar { max-width: 1000px; margin: 0 auto; background-color: #ffffff; padding: 18px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
     
     /* 학교 현장 맞춤형 이벤트 블록 서식 */
-    .fc-event { cursor: pointer; padding: 4px 6px !important; margin: 3px 2px !important; font-size: 13px !important; font-weight: bold !important; border-radius: 4px !important; border: none !important; background-color: #e8f5e9 !important; color: #1b5e20 !important; box-shadow: inset 2px 0 0 #4caf50; }
+    .fc-event {
+      cursor: pointer;
+      padding: 6px !important;
+      margin: 3px !important;
+      font-size: 14px !important;
+      font-weight: bold !important;
+      border-radius: 6px !important;
+      border: none !important;
+      background-color: #e8f5e9 !important;
+      color: #1b5e20 !important;
+      box-shadow: inset 4px 0 0 #4caf50;
+    }
+    
     .fc .fc-daygrid-day-frame { min-height: 120px; }
-    .fc .fc-toolbar-title { font-size: 1.3em !important; font-weight: bold; color: #2b2b2b; }
+    .fc .fc-toolbar-title { font-size: 1.4em !important; font-weight: bold; color: #2b2b2b; }
     .fc .fc-button-primary { background-color: #4caf50 !important; border-color: #4caf50 !important; }
     .fc .fc-button-primary:hover { background-color: #388e3c !important; border-color: #388e3c !important; }
     .fc .fc-button-active { background-color: #2e7d32 !important; border-color: #2e7d32 !important; }
-
-    /* 일정 내부의 시간 요소를 CSS 레벨에서 강제로 숨겨 화면 출력을 원천 차단 */
-    .fc-event-time { display: none !important; }
-    .fc-timegrid-event .fc-event-time { display: none !important; }
-    .fc-list-event-time { display: none !important; }
+    
+    /* 캘린더 내부 점(dot) 강제 숨김 */
+    .fc-daygrid-event-dot { display: none !important; }
   </style>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      console.log("✅ V6 특수문자 완전 제거 버전이 로드되었습니다!");
+      console.log("✅ V7 마법의 렌더링 최적화 코드 로드 완료!");
       
       var calendarEl = document.getElementById('calendar');
       var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
+        locale: 'ko', // 한국어 설정
         
-        // 언어 팩 충돌 우회를 위해 개별 요일 설정을 수동 고정
-        dayPopoverFormat: { year: 'numeric', month: 'long', day: 'numeric' },
-        dayHeaderFormat: { weekday: 'short' },
-        
-        // 상단 버튼 컨트롤 명칭 강제 한글화
-        buttonText: {
-          today: '오늘',
-          month: '월',
-          week: '주',
-          day: '일'
+        // 1번 해결: 버튼 이름을 명확하게 매핑하여 강제 한글화
+        buttonText: { today: '오늘' },
+        views: {
+          dayGridMonth: { buttonText: '월' },
+          dayGridWeek: { buttonText: '주' },
+          dayGridDay: { buttonText: '일' }
         },
 
         // 왼쪽 시간축을 제거하고 시트처럼 쌓이도록 dayGrid 뷰 결합
@@ -52,14 +59,8 @@
           right: 'dayGridMonth,dayGridWeek,dayGridDay' 
         },
 
-        // 기본 시간 표시 기능 끄기
         displayEventTime: false, 
         weekends: false, 
-
-        // 타이틀 앞 시간 문자열 청소 방어 로직
-        eventContent: function(arg) {
-          return { html: '<div class="fc-event-main-inside">' + arg.event.title + '</div>' };
-        },
         
         // 구글 스프레드시트 데이터 연동
         events: function(info, successCallback, failureCallback) {
@@ -68,10 +69,26 @@
           
           fetch(fetchUrl)
             .then(function(response) { return response.json(); })
-            .then(function(data) { successCallback(data); })
+            .then(function(data) { 
+              
+              // 2번 해결 [마법의 코드]: 서버에서 온 모든 일정의 속성을 '종일(allDay)'로 강제 변환
+              // 이렇게 하면 캘린더가 시간을 찍어내지 않고 완벽한 사각형 블록으로 화면에 쌓아줍니다.
+              var blockEvents = data.map(function(ev) {
+                ev.allDay = true;
+                return ev;
+              });
+              
+              successCallback(blockEvents); 
+            })
             .catch(function(error) { failureCallback(error); });
+        },
+
+        // 긴 글씨가 잘리지 않고 줄바꿈 되도록 설정
+        eventContent: function(arg) {
+          return { html: '<div style="white-space: normal; overflow: hidden;">' + arg.event.title + '</div>' };
         }
       });
+      
       calendar.render();
     });
   </script>
