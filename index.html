@@ -9,146 +9,91 @@
   
   <style>
     body { margin: 0; padding: 12px; font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; background-color: #f1f3f5; }
-    #calendar-container { max-width: 1000px; margin: 0 auto; background-color: #ffffff; padding: 18px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    #calendar { max-width: 1000px; margin: 0 auto; background-color: #ffffff; padding: 18px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
     
-    /* 상단 커스텀 탭 메뉴 디자인 */
-    .view-switcher { display: flex; justify-content: flex-end; gap: 6px; margin-bottom: 15px; }
-    .tab-btn { background-color: #4caf50; color: white; border: none; padding: 8px 16px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px; }
-    .tab-btn:hover { background-color: #388e3c; }
-    .tab-btn.active { background-color: #2e7d32; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
-
-    /* 구글 스프레드시트 스타일의 주간계획표 테이블 서식 */
-    .sheet-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; text-align: center; }
-    .sheet-table th { background-color: #e8f5e9; color: #1b5e20; font-weight: bold; padding: 10px; border: 1px solid #c8e6c9; }
-    .sheet-table td { padding: 12px 8px; border: 1px solid #e0e0e0; min-height: 45px; font-weight: bold; }
-    .sheet-table tr:nth-child(even) { background-color: #fafafa; }
-    .period-col { background-color: #f5f5f5; font-weight: bold; color: #555; width: 80px; }
-    .class-box { background-color: #e8f5e9; color: #1b5e20; padding: 6px; border-radius: 4px; border-left: 4px solid #4caf50; font-size: 13px; }
-
-    /* 일반 달력 뷰 내의 수업 블록 서식 조율 */
-    .fc-event { cursor: pointer; padding: 5px !important; margin: 2px !important; font-size: 13px !important; font-weight: bold !important; border-radius: 4px !important; border: none !important; background-color: #e8f5e9 !important; color: #1b5e20 !important; }
+    /* 학교 현장 맞춤형 이벤트 블록 서식 */
+    .fc-event {
+      cursor: pointer;
+      padding: 6px !important;
+      margin: 3px !important;
+      font-size: 14px !important;
+      font-weight: bold !important;
+      border-radius: 6px !important;
+      border: none !important;
+      background-color: #e8f5e9 !important;
+      color: #1b5e20 !important;
+      box-shadow: inset 4px 0 0 #4caf50;
+    }
+    
+    .fc .fc-daygrid-day-frame { min-height: 120px; }
+    .fc .fc-toolbar-title { font-size: 1.4em !important; font-weight: bold; color: #2b2b2b; }
+    .fc .fc-button-primary { background-color: #4caf50 !important; border-color: #4caf50 !important; }
+    .fc .fc-button-primary:hover { background-color: #388e3c !important; border-color: #388e3c !important; }
+    .fc .fc-button-active { background-color: #2e7d32 !important; border-color: #2e7d32 !important; }
+    
+    /* 캘린더 내부 불필요한 점(dot) 요소 강제 숨김 */
     .fc-daygrid-event-dot { display: none !important; }
-    .fc-event-time { display: none !important; }
   </style>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      console.log("✅ V8 학교 맞춤형 스프레드시트 뷰가 로드되었습니다!");
+      console.log("    V8 버튼 및 시간 숨김 마스터 코드가 로드되었습니다!");
       
       var calendarEl = document.getElementById('calendar');
-      var sheetViewEl = document.getElementById('sheet-view');
-      var rawEvents = []; // 서버에서 받아온 원본 데이터 저장소
-
-      // 1. FullCalendar 핵심 선언 (월 보기 및 일 보기 담당)
       var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
-        locale: 'ko',
-        weekends: false,
-        displayEventTime: false,
+        locale: 'ko', // 기본 한국어 패키지 선언
         
-        // 버튼 텍스트 영문 강제 덮어쓰기 우회 설정
-        buttonText: { today: '오늘', month: '월', day: '일' },
-        headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
+        // [★핵심 1] 뷰 껍데기마다 한글 버튼 텍스트 강제 수동 매핑
+        buttonText: { today: '오늘' },
+        views: {
+          dayGridMonth: { buttonText: '월' },
+          dayGridWeek: { buttonText: '주' },
+          dayGridDay: { buttonText: '일' }
+        },
+
+        // 왼쪽 시간축을 제거하고 시트처럼 쌓이도록 dayGrid 뷰 결합
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,dayGridWeek,dayGridDay' 
+        },
+
+        displayEventTime: false, 
+        weekends: false, 
         
+        // 구글 스프레드시트 데이터 연동 창구
         events: function(info, successCallback, failureCallback) {
           var url = 'https://script.google.com/macros/s/AKfycbztEDUhTVL_1zXG-r69oPNkpG10AgxAxtUbhzBzhV9TQ0y_RBdV5Q-K4MVn0NKEbZCy/exec';
-          fetch(url + '?start=' + info.startStr + '&end=' + info.endStr)
-            .then(function(res) { return response = res.json(); })
-            .then(function(data) {
-              // 시간 표시가 나타나지 않도록 allDay 처리
-              rawEvents = data.map(function(e) { e.allDay = true; return e; });
-              successCallback(rawEvents);
-              if (document.getElementById('btn-week').classList.contains('active')) {
-                buildSheetWeeklyView(calendar.getDate());
-              }
+          var fetchUrl = url + '?start=' + info.startStr + '&end=' + info.endStr;
+          
+          fetch(fetchUrl)
+            .then(function(response) { return response.json(); })
+            .then(function(data) { 
+              
+              // [★핵심 2] 구글에서 받아온 데이터의 시간 출력을 원천 차단하기 위해 
+              // 모든 일정을 '종일 일정(allDay)' 속성으로 변환하여 9a 글씨를 지워버립니다.
+              var processedData = data.map(function(ev) {
+                ev.allDay = true;
+                return ev;
+              });
+              
+              successCallback(processedData); 
             })
-            .catch(function(err) { failureCallback(err); });
+            .catch(function(error) { failureCallback(error); });
+        },
+
+        // 긴 수업 내용 글씨가 카드 밖으로 잘리지 않고 줄바꿈 되도록 처리
+        eventContent: function(arg) {
+          return { html: '<div style="white-space: normal; overflow: hidden;">' + arg.event.title + '</div>' };
         }
       });
+      
       calendar.render();
-
-      // 2. 구글 시트 양식의 주간계획표 동적 생성 변환 엔진
-      function buildSheetWeeklyView(currentDate) {
-        var startOfWeek = new Date(currentDate);
-        var day = startOfWeek.getDay();
-        var diff = startOfWeek.getDate() - day + (day == 0 ? -6 : 1); // 월요일 기준 정렬
-        startOfWeek.setDate(diff);
-
-        var days = [];
-        for (var i = 0; i < 5; i++) {
-          var nextDay = new Date(startOfWeek);
-          nextDay.setDate(startOfWeek.getDate() + i);
-          days.push(nextDay);
-        }
-
-        var dayLabels = ['월', '화', '수', '목', '금'];
-        var html = '<table class="sheet-table"><thead><tr><th>교시</th>';
-        
-        days.forEach(function(d, idx) {
-          html += '<th>' + (d.getMonth() + 1) + '/' + d.getDate() + ' (' + dayLabels[idx] + ')</th>';
-        });
-        html += '</tr></thead><tbody>';
-
-        // 1교시부터 6교시까지 행 생성
-        for (var period = 1; period <= 6; period++) {
-          html += '<tr><td class="period-col">' + period + '교시</td>';
-          
-          for (var dayIdx = 0; dayIdx < 5; dayIdx++) {
-            var targetDateStr = days[dayIdx].toISOString().split('T')[0];
-            var cellContent = "";
-            
-            // 해당 날짜의 해당 교시 일정을 탐색 ([1교시]3-5 형태 매칭)
-            rawEvents.forEach(function(ev) {
-              var evDateStr = ev.start.split('T')[0];
-              if (evDateStr === targetDateStr && ev.title.includes('[' + period + '교시]')) {
-                var className = ev.title.replace(/^\[\d+교시\]/, '');
-                cellContent += '<div class="class-box">' + className + '</div>';
-              }
-            });
-            html += '<td>' + cellContent + '</td>';
-          }
-          html += '</tr>';
-        }
-        html += '</tbody></table>';
-        sheetViewEl.innerHTML = html;
-      }
-
-      // 3. 상단 커스텀 탭 버튼 이벤트 바인딩 (월/주/일 분기 제어)
-      document.querySelectorAll('.tab-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
-          this.classList.contains('active');
-          this.classList.add('active');
-          
-          var viewType = this.id.replace('btn-', '');
-          if (viewType === 'month') {
-            calendarEl.style.display = 'block';
-            sheetViewEl.style.display = 'none';
-            calendar.changeView('dayGridMonth');
-          } else if (viewType === 'week') {
-            calendarEl.style.display = 'none';
-            sheetViewEl.style.display = 'block';
-            buildSheetWeeklyView(calendar.getDate());
-          } else if (viewType === 'day') {
-            calendarEl.style.display = 'block';
-            sheetViewEl.style.display = 'none';
-            calendar.changeView('dayGridDay');
-          }
-        });
-      });
     });
   </script>
 </head>
 <body>
-  <div id="calendar-container">
-    <div class="view-switcher">
-      <button id="btn-month" class="tab-btn active">월</button>
-      <button id="btn-week" class="tab-btn">주</button>
-      <button id="btn-day" class="tab-btn">일</button>
-    </div>
-    
-    <div id="calendar"></div>
-    <div id="sheet-view" style="display: none;"></div>
-  </div>
+  <div id="calendar"></div>
 </body>
 </html>
