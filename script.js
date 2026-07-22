@@ -317,20 +317,27 @@ function setupMemoListener() {
 }
 
 function autoFitTextSize() {
-  // 테이블 내의 모든 <td> 셀을 대상으로 글자 길이에 따라 폰트 크기를 자동 조절
-  document.querySelectorAll('table td').forEach(cell => {
-    let textLength = cell.innerText.trim().length;
+  // 테이블 내의 모든 <td> 및 메모 입력창(textarea)을 대상으로 줄바꿈 방지 및 폰트 자동 축소 적용
+  document.querySelectorAll('table td, .memo-input').forEach(el => {
+    // 셀 내부의 텍스트 길이 계산 (textarea인 경우 value 기준)
+    let textLength = (el.tagName === 'TEXTAREA' ? el.value : el.innerText).trim().length;
     
-    if (textLength > 20) {
-      cell.style.fontSize = '9px';
-    } else if (textLength > 15) {
-      cell.style.fontSize = '10px';
-    } else if (textLength > 10) {
-      cell.style.fontSize = '11px';
-    } else if (textLength > 5) {
-      cell.style.fontSize = '12px';
+    // 강제로 한 줄 출력을 유지하기 위한 스타일 적용
+    el.style.whiteSpace = 'nowrap';
+    el.style.overflow = 'hidden';
+    el.style.textOverflow = 'ellipsis';
+    
+    // 글자 길이에 따른 단계별 폰트 크기 동적 축소
+    if (textLength > 25) {
+      el.style.fontSize = '8px';
+    } else if (textLength > 18) {
+      el.style.fontSize = '9px';
+    } else if (textLength > 12) {
+      el.style.fontSize = '10px';
+    } else if (textLength > 6) {
+      el.style.fontSize = '11px';
     } else {
-      cell.style.fontSize = '13px'; // 기본 크기
+      el.style.fontSize = '12px'; // 기본 크기
     }
   });
 }
