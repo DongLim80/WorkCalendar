@@ -155,7 +155,7 @@ function renderWeek(dataList) {
     for (let i = 1; i <= 6; i++) {
       html += `<tr>`;
       if (i === 1) {
-        html += `<td rowspan="6" class="date-cell" style="text-align: center; vertical-align: middle;">${dayData.month}.<br>${dayData.day}일<br>${dayData.dayOfWeek}</td>`;
+        html += `<td rowspan="6" class="date-cell" style="text-align: center; vertical-align: middle;">${dayData.month}바보<br>${dayData.day}일<br>${dayData.dayOfWeek}</td>`;
         html += `<td rowspan="6" class="event-cell">${formattedEvent}</td>`;
       }
       
