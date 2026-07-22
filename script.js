@@ -153,7 +153,8 @@ function renderWeek(dataList) {
       html += `<tr>`;
       if (i === 1) {
         html += `<td rowspan="6" class="date-cell" style="text-align: center; vertical-align: middle;">${dayData.month}월<br>${dayData.day}일<br>${dayData.dayOfWeek}</td>`;
-        html += `<td rowspan="6" class="event-cell">${dayData.academicEvent || ''}</td>`;
+        let eventText = dayData.academicEvent ? String(dayData.academicEvent).replace(/\n/g, '<br>') : '';
+        html += `<td rowspan="6" class="event-cell">${eventText}</td>`;
       }
       
       let cls = dayData.classes[i] || '';
@@ -197,7 +198,8 @@ function renderDay(dataList) {
   for (let i = 1; i <= 6; i++) {
     html += `<tr>`;
     if (i === 1) {
-      html += `<td rowspan="6" class="event-cell" style="font-size:16px;">${dayData.academicEvent || '일정 없음'}</td>`;
+      let eventText = dayData.academicEvent ? String(dayData.academicEvent).replace(/\n/g, '<br>') : '일정 없음';
+      html += `<td rowspan="6" class="event-cell" style="font-size:14px;">${eventText}</td>`;
     }
     let cls = dayData.classes[i] || '';
     let memo = (dayData.memos && dayData.memos[i]) ? String(dayData.memos[i]) : '';
@@ -318,19 +320,17 @@ function setupMemoListener() {
 }
 
 function autoFitTextSize() {
-  // 수업 칸 및 테이블 내 주요 셀 대상 폰트 자동 축소 및 한 줄 강제
   document.querySelectorAll('.class-cell, .date-cell, table td').forEach(cell => {
-    // textarea는 제외 (textarea는 높이 자동 조절을 사용하므로)
-    if (cell.querySelector('textarea')) return;
+    // textarea나 일정 칸(.event-cell)은 한 줄 고정 대상에서 제외
+    if (cell.querySelector('textarea') || cell.classList.contains('event-cell')) return;
 
     let textLength = cell.innerText.trim().length;
 
-    // 강제로 한 줄 출력을 유지하기 위한 스타일 적용
+    // 수업/날짜 칸만 한 줄 고정 및 자동 폰트 축소 적용
     cell.style.whiteSpace = 'nowrap';
     cell.style.overflow = 'hidden';
     cell.style.textOverflow = 'ellipsis';
 
-    // 글자 길이에 따른 단계별 폰트 크기 동적 축소
     if (textLength > 15) {
       cell.style.fontSize = '8px';
     } else if (textLength > 10) {
@@ -338,7 +338,7 @@ function autoFitTextSize() {
     } else if (textLength > 6) {
       cell.style.fontSize = '10px';
     } else {
-      cell.style.fontSize = '12px'; // 기본 크기
+      cell.style.fontSize = '12px';
     }
   });
 }
