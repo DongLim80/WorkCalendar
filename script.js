@@ -140,7 +140,7 @@ function renderWeek(dataList) {
   let html = `<table class="week-table">
   <thead>
     <tr>
-      <th width="10%">날짜</th><th width="20%">일정</th><th width="3%">교시</th><th width="8%">수업</th><th width="59%">메모</th>
+      <th width="10%">날짜</th><th width="20%">일정</th><th width="3%">교시</th><th width="12%">수업</th><th width="55%">메모</th>
     </tr>
   </thead>
   <tbody>`;
@@ -149,11 +149,14 @@ function renderWeek(dataList) {
     let d = new Date(dayData.date);
     if(d.getDay() === 0 || d.getDay() === 6) return; // 주간 계획표에서는 토/일 제거
 
+    // 일점 내용의 엔터(\n)를 HTML 줄바꿈(<br>)으로 변환
+    let formattedEvent = dayData.academicEvent ? String(dayData.academicEvent).replace(/\n/g, '<br>') : '';
+
     for (let i = 1; i <= 6; i++) {
       html += `<tr>`;
       if (i === 1) {
         html += `<td rowspan="6" class="date-cell" style="text-align: center; vertical-align: middle;">${dayData.month}월<br>${dayData.day}일<br>${dayData.dayOfWeek}</td>`;
-        html += `<td rowspan="6" class="event-cell">${dayData.academicEvent || ''}</td>`;
+        html += `<td rowspan="6" class="event-cell">${formattedEvent}</td>`;
       }
       
       let cls = dayData.classes[i] || '';
@@ -165,7 +168,7 @@ function renderWeek(dataList) {
       else if(cls.startsWith('4')) bgColor = 'style="background-color: #fff9c4;"';
       
       html += `<td ${bgColor}>${i}</td>`;
-      html += `<td ${bgColor}>${cls}</td>`;
+      html += `<td ${bgColor} class="class-cell">${cls}</td>`;
       html += `<td ${bgColor}><textarea class="memo-input" data-date="${dayData.date}" data-period="${i}" placeholder="여기를 터치하여 메모 작성">${memo}</textarea></td>`;
       html += `</tr>`;
     }
@@ -173,6 +176,9 @@ function renderWeek(dataList) {
 
   html += `</tbody></table>`;
   document.getElementById('content-container').innerHTML = html;
+  
+  // ★ 셀 속성 및 폰트 크기 정리 실행!
+  autoFitTextSize();
   
   // 화면에 그려진 후 메모 높이 자동 맞춤 실행
   adjustAllTextareas();
@@ -183,6 +189,8 @@ function renderWeek(dataList) {
 // ============================================
 function renderDay(dataList) {
   const dayData = dataList[0];
+  let formattedEvent = dayData.academicEvent ? String(dayData.academicEvent).replace(/\n/g, '<br>') : '일정 없음';
+
   let html = `<table class="day-table">
     <thead>
       <tr>
@@ -194,7 +202,7 @@ function renderDay(dataList) {
   for (let i = 1; i <= 6; i++) {
     html += `<tr>`;
     if (i === 1) {
-      html += `<td rowspan="6" class="event-cell" style="font-size:16px;">${dayData.academicEvent || '일정 없음'}</td>`;
+      html += `<td rowspan="6" class="event-cell" style="font-size:15px;">${formattedEvent}</td>`;
     }
     let cls = dayData.classes[i] || '';
     let memo = (dayData.memos && dayData.memos[i]) ? String(dayData.memos[i]) : '';
@@ -205,12 +213,15 @@ function renderDay(dataList) {
     else if(cls.startsWith('4')) bgColor = 'style="background-color: #fff9c4;"';
       
     html += `<td ${bgColor}>${i}교시</td>`;
-    html += `<td ${bgColor}>${cls}</td>`;
+    html += `<td ${bgColor} class="class-cell">${cls}</td>`;
     html += `<td ${bgColor}><textarea class="memo-input" data-date="${dayData.date}" data-period="${i}" placeholder="여기를 터치하여 메모 작성">${memo}</textarea></td>`;
     html += `</tr>`;
   }
   html += `</tbody></table>`;
   document.getElementById('content-container').innerHTML = html;
+  
+  // ★ 셀 속성 및 폰트 크기 정리 실행!
+  autoFitTextSize();
   
   // 화면에 그려진 후 메모 높이 자동 맞춤 실행
   adjustAllTextareas();
@@ -238,7 +249,8 @@ function renderMonth(dataList) {
       <div class="cal-date">${dayData.day}</div>`;
     
     if(dayData.academicEvent) {
-      html += `<div class="cal-event">${dayData.academicEvent}</div>`;
+      let formattedEvent = String(dayData.academicEvent).replace(/\n/g, '<br>');
+      html += `<div class="cal-event">${formattedEvent}</div>`;
     }
     
     let classStrs = [];
@@ -259,14 +271,12 @@ function renderMonth(dataList) {
 // 메모 입력 시 구글 시트로 POST 저장 동기화 이벤트
 // ============================================
 function setupMemoListener() {
-  // 1. 글을 입력할 때마다 실시간으로 textarea 높이를 자동으로 조절해주는 이벤트
   document.addEventListener('input', (e) => {
     if (e.target.classList.contains('memo-input')) {
       autoResizeTextarea(e.target);
     }
   });
 
-  // 2. 포커스 해제(change) 시 구글 시트 저장 동기화 이벤트
   document.addEventListener('change', (e) => {
     if (e.target.classList.contains('memo-input')) {
       const input = e.target;
@@ -274,7 +284,6 @@ function setupMemoListener() {
       const period = input.getAttribute('data-period');
       const content = input.value;
       
-      // 저장 중 표시 (주황색 테두리)
       input.style.borderBottom = '2px solid #f59e0b'; 
       
       fetch(WEB_APP_URL, {
@@ -290,7 +299,6 @@ function setupMemoListener() {
       .then(res => res.json())
       .then(data => {
         if(data.status === 'success') {
-          // 저장 성공 (초록색 테두리)
           input.style.borderBottom = '2px solid #10b981';
           setTimeout(() => input.style.borderBottom = '', 1500);
         } else {
@@ -302,6 +310,25 @@ function setupMemoListener() {
         console.error(err);
         input.style.borderBottom = '2px solid #ef4444';
       });
+    }
+  });
+}
+
+function autoFitTextSize() {
+  document.querySelectorAll('table td').forEach(cell => {
+    // 메모 입력창, 일정 칸, 수업 내용 칸은 한 줄 강제를 하지 않고 자연스러운 줄바꿈 허용!
+    if (cell.querySelector('textarea') || cell.classList.contains('event-cell') || cell.classList.contains('class-cell')) {
+      cell.style.whiteSpace = 'normal';
+      cell.style.wordBreak = 'break-all';
+      return;
+    }
+
+    // 그 외 단순 날짜/교시 셀만 글자 수에 맞춰 폰트 미세 조정
+    let textLength = cell.innerText.trim().length;
+    if (textLength > 10) {
+      cell.style.fontSize = '11px';
+    } else {
+      cell.style.fontSize = '13px';
     }
   });
 }
