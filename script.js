@@ -138,7 +138,7 @@ function renderWeek(dataList) {
     if(d.getDay() === 0 || d.getDay() === 6) return; // 주간 계획표에서는 토/일 제거
 
     for (let i = 1; i <= 6; i++) {
-      html += `<tr>`;
+       `<tr>`;
       if (i === 1) {
         html += `<td rowspan="6" class="date-cell" style="text-align: center; vertical-align: middle;">${dayData.month}월<br>${dayData.day}일<br>${dayData.dayOfWeek}</td>`;
         html += `<td rowspan="6" class="event-cell">${dayData.academicEvent || ''}</td>`;
@@ -194,7 +194,7 @@ function renderDay(dataList) {
     
     html += `<td ${bgColor}>${i}교시</td>`;
     html += `<td ${bgColor}>${cls}</td>`;
-    html += `<td ${bgColor}><input type="text" class="memo-input" data-date="${dayData.date}" data-period="${i}" value="${memo}" placeholder="여기를 터치하여 메모 작성"></td>`;
+    html += `<td ${bgColor}><textarea class="memo-input" data-date="${dayData.date}" data-period="${i}" placeholder="여기를 터치하여 메모 작성">${memo}</textarea></td>`;
     html += `</tr>`;
   }
   html += `</tbody></table>`;
