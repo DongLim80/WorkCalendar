@@ -212,7 +212,7 @@ function renderDay(dataList) {
     if(cls.startsWith('3')) bgColor = 'style="background-color: #e8f5e9;"';
     else if(cls.startsWith('4')) bgColor = 'style="background-color: #fff9c4;"';
       
-    html += `<td ${bgColor}>${i}교시</td>`;
+    html += `<td ${bgColor}>${i}</td>`;
     html += `<td ${bgColor} class="class-cell">${cls}</td>`;
     html += `<td ${bgColor}><textarea class="memo-input" data-date="${dayData.date}" data-period="${i}" placeholder="여기를 터치하여 메모 작성">${memo}</textarea></td>`;
     html += `</tr>`;
