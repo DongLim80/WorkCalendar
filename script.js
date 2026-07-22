@@ -147,17 +147,14 @@ function renderWeek(dataList) {
       }
       
       let cls = dayData.classes[i] || '';
-      // 1. 메모 데이터 가공 (undefined 방지 및 <br> 태그를 순수 엔터(\n)로 복원)
-      let memo = (dayData.memos && dayData.memos[i]) ? String(dayData.memos[i]) : '';
-      memo = memo.replace(/<br\s*\/?>/gi, '\n').trim(); // <br> 글자 제거 및 앞뒤 공백 정리
-
+      let memo = dayData.memos[i] || '';
       let bgColor = '';
       if(cls.startsWith('3')) bgColor = 'style="background-color: #e8f5e9;"';
       else if(cls.startsWith('4')) bgColor = 'style="background-color: #fff9c4;"';
       
       html += `<td ${bgColor}>${i}</td>`;
       html += `<td ${bgColor}>${cls}</td>`;
-      html += `<td ${bgColor}>< type="text" class="memo-" data-date="${dayData.date}" data-period="${i}" value="${memo}" placeholder="메모 입력..."></td>`;
+      html += `<td ${bgColor}><input type="text" class="memo-input" data-date="${dayData.date}" data-period="${i}" value="${memo}" placeholder="메모 입력..."></td>`;
       html += `</tr>`;
     }
   });
@@ -171,8 +168,6 @@ function renderWeek(dataList) {
 // ============================================
 function renderDay(dataList) {
   const dayData = dataList[0];
-  // 1. 메모가 없을 때 undefined가 뜨지 않도록 안전하게 변수 처리
-  const memoText = (dayData.memos && dayData.memos[i]) ? dayData.memos[i] : '';
   let html = `<table class="day-table">
     <thead>
       <tr>
@@ -187,18 +182,14 @@ function renderDay(dataList) {
       html += `<td rowspan="6" class="event-cell" style="font-size:16px;">${dayData.academicEvent || '일정 없음'}</td>`;
     }
     let cls = dayData.classes[i] || '';
-    // 1. 메모 데이터 가공 (undefined 방지 및 <br> 태그를 순수 엔터(\n)로 복원)
-    let memo = (dayData.memos && dayData.memos[i]) ? String(dayData.memos[i]) : '';
-    memo = memo.replace(/<br\s*\/?>/gi, '\n').trim(); // <br> 글자 제거 및 앞뒤 공백 정리
-
+    let memo = dayData.memos[i] || '';
     let bgColor = '';
     if(cls.startsWith('3')) bgColor = 'style="background-color: #e8f5e9;"';
     else if(cls.startsWith('4')) bgColor = 'style="background-color: #fff9c4;"';
     
     html += `<td ${bgColor}>${i}교시</td>`;
     html += `<td ${bgColor}>${cls}</td>`;
-    // 2. <textarea> 태그 안쪽에 줄바꿈/띄어쓰기 없이 바짝 붙여서 한 줄로 생성
-    html += `<td ${bgColor}><textarea class="memo-input" data-date="${dayData.date}" data-period="${i}" placeholder="여기를 터치하여 메모 작성">${memo}</textarea></td>`;
+    html += `<td ${bgColor}><input type="text" class="memo-input" data-date="${dayData.date}" data-period="${i}" value="${memo}" placeholder="여기를 터치하여 메모 작성"></td>`;
     html += `</tr>`;
   }
   html += `</tbody></table>`;
