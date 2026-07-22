@@ -147,7 +147,10 @@ function renderWeek(dataList) {
       }
       
       let cls = dayData.classes[i] || '';
-      let memo = dayData.memos[i] || '';
+      // 1. 메모 데이터 안전 가공 (undefined 방지 및 <br> 태그를 엔터 \n 로 정문화)
+      let memo = (dayData.memos && dayData.memos[i]) ? String(dayData.memos[i]) : '';
+      memo = memo.replace(/<br\s*\/?>/gi, '\n'); // 기존 시트에 <br>로 입력되어 있던 경우 엔터로 변환
+
       let bgColor = '';
       if(cls.startsWith('3')) bgColor = 'style="background-color: #e8f5e9;"';
       else if(cls.startsWith('4')) bgColor = 'style="background-color: #fff9c4;"';
@@ -182,7 +185,10 @@ function renderDay(dataList) {
       html += `<td rowspan="6" class="event-cell" style="font-size:16px;">${dayData.academicEvent || '일정 없음'}</td>`;
     }
     let cls = dayData.classes[i] || '';
-    let memo = dayData.memos[i] || '';
+    // 1. 메모 데이터 안전 가공 (undefined 방지 및 <br> 태그를 엔터 \n 로 정문화)
+    let memo = (dayData.memos && dayData.memos[i]) ? String(dayData.memos[i]) : '';
+    memo = memo.replace(/<br\s*\/?>/gi, '\n'); // 기존 시트에 <br>로 입력되어 있던 경우 엔터로 변환
+
     let bgColor = '';
     if(cls.startsWith('3')) bgColor = 'style="background-color: #e8f5e9;"';
     else if(cls.startsWith('4')) bgColor = 'style="background-color: #fff9c4;"';
