@@ -140,7 +140,7 @@ function renderWeek(dataList) {
   let html = `<table class="week-table">
   <thead>
     <tr>
-      <th width="10%">날짜</th><th width="20%">일정</th><th width="5%">교시</th><th width="10%">수업</th><th width="70%">메모</th>
+      <th width="10%">날짜</th><th width="20%">일정</th><th width="3%">교시</th><th width="8%">수업</th><th width="59%">메모</th>
     </tr>
   </thead>
   <tbody>`;
@@ -153,8 +153,7 @@ function renderWeek(dataList) {
       html += `<tr>`;
       if (i === 1) {
         html += `<td rowspan="6" class="date-cell" style="text-align: center; vertical-align: middle;">${dayData.month}월<br>${dayData.day}일<br>${dayData.dayOfWeek}</td>`;
-        let eventText = dayData.academicEvent ? String(dayData.academicEvent).replace(/\n/g, '<br>') : '';
-        html += `<td rowspan="6" class="event-cell">${eventText}</td>`;
+        html += `<td rowspan="6" class="event-cell">${dayData.academicEvent || ''}</td>`;
       }
       
       let cls = dayData.classes[i] || '';
@@ -166,7 +165,7 @@ function renderWeek(dataList) {
       else if(cls.startsWith('4')) bgColor = 'style="background-color: #fff9c4;"';
       
       html += `<td ${bgColor}>${i}</td>`;
-      html += `<td ${bgColor} class="class-cell">${cls}</td>`;
+      html += `<td ${bgColor}>${cls}</td>`;
       html += `<td ${bgColor}><textarea class="memo-input" data-date="${dayData.date}" data-period="${i}" placeholder="여기를 터치하여 메모 작성">${memo}</textarea></td>`;
       html += `</tr>`;
     }
@@ -174,9 +173,6 @@ function renderWeek(dataList) {
 
   html += `</tbody></table>`;
   document.getElementById('content-container').innerHTML = html;
-
-  // 칸에 맞게 포트 조절
-  autoFitTextSize();
   
   // 화면에 그려진 후 메모 높이 자동 맞춤 실행
   adjustAllTextareas();
@@ -198,8 +194,7 @@ function renderDay(dataList) {
   for (let i = 1; i <= 6; i++) {
     html += `<tr>`;
     if (i === 1) {
-      let eventText = dayData.academicEvent ? String(dayData.academicEvent).replace(/\n/g, '<br>') : '일정 없음';
-      html += `<td rowspan="6" class="event-cell" style="font-size:14px;">${eventText}</td>`;
+      html += `<td rowspan="6" class="event-cell" style="font-size:16px;">${dayData.academicEvent || '일정 없음'}</td>`;
     }
     let cls = dayData.classes[i] || '';
     let memo = (dayData.memos && dayData.memos[i]) ? String(dayData.memos[i]) : '';
@@ -210,7 +205,7 @@ function renderDay(dataList) {
     else if(cls.startsWith('4')) bgColor = 'style="background-color: #fff9c4;"';
       
     html += `<td ${bgColor}>${i}교시</td>`;
-    html += `<td ${bgColor} class="class-cell">${cls}</td>`;
+    html += `<td ${bgColor}>${cls}</td>`;
     html += `<td ${bgColor}><textarea class="memo-input" data-date="${dayData.date}" data-period="${i}" placeholder="여기를 터치하여 메모 작성">${memo}</textarea></td>`;
     html += `</tr>`;
   }
@@ -225,21 +220,14 @@ function renderDay(dataList) {
 // [월 보기] 캘린더 그리드 레이아웃 렌더링
 // ============================================
 function renderMonth(dataList) {
-  // 1. 그리드를 7열(일~토)에서 5열(월~금)로 변경하기 위해 CSS 스타일이나 구조를 맞춤
-  let html = `<div class="cal-grid" style="grid-template-columns: repeat(5, 1fr);">`;
-  
-  // 2. 월~금 요일 헤더만 생성
-  const days = ['월','화','수','목','금'];
+  let html = `<div class="cal-grid">`;
+  const days = ['일','월','화','수','목','금','토'];
   days.forEach(d => {
     html += `<div class="cal-header">${d}</div>`;
   });
 
   dataList.forEach(dayData => {
     let d = new Date(dayData.date);
-    
-    // 3. 토요일(6)과 일요일(0)은 월 보기 그리드에서 제외
-    if (d.getDay() === 0 || d.getDay() === 6) return;
-
     let isCurrentMonth = d.getMonth() === currentDate.getMonth();
     let isToday = dayData.date === formatDate(new Date());
     let clsName = 'cal-cell';
@@ -255,11 +243,10 @@ function renderMonth(dataList) {
     
     let classStrs = [];
     for(let i=1; i<=6; i++) {
-      if(dayData.classes[i]) classStrs.push(`${i}:${dayData.classes[i]}`);
+      if(dayData.classes[i]) classStrs.push(`${i}교시:${dayData.classes[i]}`);
     }
     if(classStrs.length > 0) {
-      // <br> 대신 공백으로 연결하여 한 줄로 잇고, 스타일로 줄바꿈 방지 적용
-      html += `<div class="cal-class" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 10px;">${classStrs.join(' ')}</div>`;
+      html += `<div class="cal-class">${classStrs.join('<br>')}</div>`;
     }
     
     html += `</div>`;
@@ -315,30 +302,6 @@ function setupMemoListener() {
         console.error(err);
         input.style.borderBottom = '2px solid #ef4444';
       });
-    }
-  });
-}
-
-function autoFitTextSize() {
-  document.querySelectorAll('.class-cell, .date-cell, table td').forEach(cell => {
-    // textarea나 일정 칸(.event-cell)은 한 줄 고정 대상에서 제외
-    if (cell.querySelector('textarea') || cell.classList.contains('event-cell')) return;
-
-    let textLength = cell.innerText.trim().length;
-
-    // 수업/날짜 칸만 한 줄 고정 및 자동 폰트 축소 적용
-    cell.style.whiteSpace = 'nowrap';
-    cell.style.overflow = 'hidden';
-    cell.style.textOverflow = 'ellipsis';
-
-    if (textLength > 15) {
-      cell.style.fontSize = '8px';
-    } else if (textLength > 10) {
-      cell.style.fontSize = '9px';
-    } else if (textLength > 6) {
-      cell.style.fontSize = '10px';
-    } else {
-      cell.style.fontSize = '12px';
     }
   });
 }
