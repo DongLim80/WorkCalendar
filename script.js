@@ -140,7 +140,7 @@ function renderWeek(dataList) {
   let html = `<table class="week-table">
   <thead>
     <tr>
-      <th width="6%">날짜</th><th width="20%">일정</th><th width="3%">교시</th><th width="6%">수업</th><th width="65%">메모</th>
+      <th width="7%">날짜</th><th width="20%">일정</th><th width="3%">교시</th><th width="7%">수업</th><th width="63%">메모</th>
     </tr>
   </thead>
   <tbody>`;
