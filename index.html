@@ -23,9 +23,27 @@
     th, td { border: 1px solid #cbd5e1; padding: 10px; }
     th { background-color: #f1f5f9; font-weight: bold; color: #334155; }
     
-    /* 메모 입력칸 서식 */
-    .memo-input { width: 100%; box-sizing: border-box; background: transparent; border: none; border-bottom: 2px solid transparent; padding: 6px; font-family: inherit; font-size: 13px; outline: none; transition: 0.3s; }
-    .memo-input:focus { border-bottom: 2px solid #4caf50; background: #fff; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    /* 메모 입력칸 서식 (textarea 대응 수정) */
+    .memo-input {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      padding: 6px;
+      font-size: 0.875rem;
+      font-family: inherit;
+      resize: vertical;          /* 사용자가 상하 크기를 조절할 수 있게 설정 */
+      white-space: pre-wrap;     /* 줄바꿈(\n) 문자가 화면에 깨지지 않고 표시되도록 설정 */
+      box-sizing: border-box;
+      overflow: auto;
+      vertical-align: top;
+    }
+
+    .memo-input:focus {
+      outline: none;
+      border-color: #4caf50;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
     
     .date-cell { font-weight: bold; background: #f8fafc; }
     .event-cell { white-space: pre-line; text-align: left; font-size: 13px; color: #b91c1c; font-weight: bold; }
