@@ -173,6 +173,9 @@ function renderWeek(dataList) {
 
   html += `</tbody></table>`;
   document.getElementById('content-container').innerHTML = html;
+
+  // 칸에 맞게 포트 조절
+  autoFitTextSize();
   
   // 화면에 그려진 후 메모 높이 자동 맞춤 실행
   adjustAllTextareas();
@@ -309,6 +312,25 @@ function setupMemoListener() {
         console.error(err);
         input.style.borderBottom = '2px solid #ef4444';
       });
+    }
+  });
+}
+
+function autoFitTextSize() {
+  // 테이블 내의 모든 <td> 셀을 대상으로 글자 길이에 따라 폰트 크기를 자동 조절
+  document.querySelectorAll('table td').forEach(cell => {
+    let textLength = cell.innerText.trim().length;
+    
+    if (textLength > 20) {
+      cell.style.fontSize = '9px';
+    } else if (textLength > 15) {
+      cell.style.fontSize = '10px';
+    } else if (textLength > 10) {
+      cell.style.fontSize = '11px';
+    } else if (textLength > 5) {
+      cell.style.fontSize = '12px';
+    } else {
+      cell.style.fontSize = '13px'; // 기본 크기
     }
   });
 }
