@@ -121,6 +121,18 @@ function renderData(dataList) {
   else renderDay(dataList);
 }
 
+// 텍스트상자 높이 자동 조절 공통 함수
+function autoResizeTextarea(el) {
+  el.style.height = 'auto';
+  el.style.height = (el.scrollHeight) + 'px';
+}
+
+function adjustAllTextareas() {
+  setTimeout(() => {
+    document.querySelectorAll('.memo-input').forEach(el => autoResizeTextarea(el));
+  }, 50);
+}
+
 // ============================================
 // [주 보기] 오리지널 세로형 시트 레이아웃 렌더링
 // ============================================
@@ -138,16 +150,15 @@ function renderWeek(dataList) {
     if(d.getDay() === 0 || d.getDay() === 6) return; // 주간 계획표에서는 토/일 제거
 
     for (let i = 1; i <= 6; i++) {
-       `<tr>`;
+      html += `<tr>`;
       if (i === 1) {
         html += `<td rowspan="6" class="date-cell" style="text-align: center; vertical-align: middle;">${dayData.month}월<br>${dayData.day}일<br>${dayData.dayOfWeek}</td>`;
         html += `<td rowspan="6" class="event-cell">${dayData.academicEvent || ''}</td>`;
       }
       
       let cls = dayData.classes[i] || '';
-      // 1. 메모 데이터 안전 가공 (undefined 방지 및 <br> 태그를 엔터 \n 로 정문화)
       let memo = (dayData.memos && dayData.memos[i]) ? String(dayData.memos[i]) : '';
-      memo = memo.replace(/<br\s*\/?>/gi, '\n'); // 기존 시트에 <br>로 입력되어 있던 경우 엔터로 변환
+      memo = memo.replace(/<br\s*\/?>/gi, '\n');
 
       let bgColor = '';
       if(cls.startsWith('3')) bgColor = 'style="background-color: #e8f5e9;"';
@@ -155,7 +166,6 @@ function renderWeek(dataList) {
       
       html += `<td ${bgColor}>${i}</td>`;
       html += `<td ${bgColor}>${cls}</td>`;
-      // 2. <textarea> 태그 생성 (<textarea ...>${memo}</textarea> 사이에 띄어쓰기/줄바꿈 금지!)
       html += `<td ${bgColor}><textarea class="memo-input" data-date="${dayData.date}" data-period="${i}" placeholder="여기를 터치하여 메모 작성">${memo}</textarea></td>`;
       html += `</tr>`;
     }
@@ -163,6 +173,9 @@ function renderWeek(dataList) {
 
   html += `</tbody></table>`;
   document.getElementById('content-container').innerHTML = html;
+  
+  // 화면에 그려진 후 메모 높이 자동 맞춤 실행
+  adjustAllTextareas();
 }
 
 // ============================================
@@ -184,14 +197,13 @@ function renderDay(dataList) {
       html += `<td rowspan="6" class="event-cell" style="font-size:16px;">${dayData.academicEvent || '일정 없음'}</td>`;
     }
     let cls = dayData.classes[i] || '';
-    // 1. 메모 데이터 안전 가공 (undefined 방지 및 <br> 태그를 엔터 \n 로 정문화)
     let memo = (dayData.memos && dayData.memos[i]) ? String(dayData.memos[i]) : '';
-    memo = memo.replace(/<br\s*\/?>/gi, '\n'); // 기존 시트에 <br>로 입력되어 있던 경우 엔터로 변환
+    memo = memo.replace(/<br\s*\/?>/gi, '\n');
 
     let bgColor = '';
     if(cls.startsWith('3')) bgColor = 'style="background-color: #e8f5e9;"';
     else if(cls.startsWith('4')) bgColor = 'style="background-color: #fff9c4;"';
-    
+      
     html += `<td ${bgColor}>${i}교시</td>`;
     html += `<td ${bgColor}>${cls}</td>`;
     html += `<td ${bgColor}><textarea class="memo-input" data-date="${dayData.date}" data-period="${i}" placeholder="여기를 터치하여 메모 작성">${memo}</textarea></td>`;
@@ -199,6 +211,9 @@ function renderDay(dataList) {
   }
   html += `</tbody></table>`;
   document.getElementById('content-container').innerHTML = html;
+  
+  // 화면에 그려진 후 메모 높이 자동 맞춤 실행
+  adjustAllTextareas();
 }
 
 // ============================================
@@ -244,16 +259,14 @@ function renderMonth(dataList) {
 // 메모 입력 시 구글 시트로 POST 저장 동기화 이벤트
 // ============================================
 function setupMemoListener() {
-  // 1. 글을 입력할 때마다 textarea 높이를 자동으로 조절해주는 이벤트 (새로 추가)
+  // 1. 글을 입력할 때마다 실시간으로 textarea 높이를 자동으로 조절해주는 이벤트
   document.addEventListener('input', (e) => {
     if (e.target.classList.contains('memo-input')) {
-      const textarea = e.target;
-      textarea.style.height = 'auto'; // 높이 초기화 후 내용물 크기 재계산
-      textarea.style.height = (textarea.scrollHeight) + 'px'; // 실제 내용 높이만큼 적용
+      autoResizeTextarea(e.target);
     }
   });
 
-  // 2. 기존 포커스 해제(change) 시 구글 시트 저장 동기화 이벤트
+  // 2. 포커스 해제(change) 시 구글 시트 저장 동기화 이벤트
   document.addEventListener('change', (e) => {
     if (e.target.classList.contains('memo-input')) {
       const input = e.target;
