@@ -157,7 +157,8 @@ function renderWeek(dataList) {
       
       html += `<td ${bgColor}>${i}</td>`;
       html += `<td ${bgColor}>${cls}</td>`;
-      html += `<td ${bgColor}><input type="text" class="memo-input" data-date="${dayData.date}" data-period="${i}" value="${memo}" placeholder="메모 입력..."></td>`;
+      // 2. <textarea> 태그 생성 (<textarea ...>${memo}</textarea> 사이에 띄어쓰기/줄바꿈 금지!)
+      html += `<td ${bgColor}><textarea class="memo-input" data-date="${dayData.date}" data-period="${i}" placeholder="여기를 터치하여 메모 작성">${memo}</textarea></td>`;
       html += `</tr>`;
     }
   });
