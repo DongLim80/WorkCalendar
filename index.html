@@ -27,16 +27,18 @@
     .memo-input {
       width: 100%;
       min-height: 38px;
+      height: auto;              /* 높이가 내용에 따라 자동으로 잡히도록 설정 */
       border: 1px solid #e5e7eb;
       border-radius: 4px;
       padding: 6px;
       font-size: 0.875rem;
       font-family: inherit;
-      resize: vertical;          /* 사용자가 상하 크기를 조절할 수 있게 설정 */
-      white-space: pre-wrap;     /* 줄바꿈(\n) 문자가 화면에 깨지지 않고 표시되도록 설정 */
+      resize: none;              /* 수동 마우스 크기 조절 비활성화 (자동으로 늘어나므로 불필요) */
+      white-space: pre-wrap;     
       box-sizing: border-box;
-      overflow: auto;
+      overflow: hidden;          /* 스크롤바가 생기지 않도록 숨김 */
       vertical-align: top;
+      line-height: 1.4;          /* 줄 간격을 일정하게 유지하여 계산 오차 방지 */
     }
 
     .memo-input:focus {
