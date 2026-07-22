@@ -154,7 +154,7 @@ function renderWeek(dataList) {
       
       html += `<td ${bgColor}>${i}</td>`;
       html += `<td ${bgColor}>${cls}</td>`;
-      html += `<td ${bgColor}><input type="text" class="memo-input" data-date="${dayData.date}" data-period="${i}" value="${memo}" placeholder="메모 입력..."></td>`;
+      html += `<td ${bgColor}>< type="text" class="memo-" data-date="${dayData.date}" data-period="${i}" value="${memo}" placeholder="메모 입력..."></td>`;
       html += `</tr>`;
     }
   });
@@ -189,7 +189,7 @@ function renderDay(dataList) {
     
     html += `<td ${bgColor}>${i}교시</td>`;
     html += `<td ${bgColor}>${cls}</td>`;
-    html += `<td ${bgColor}><input type="text" class="memo-input" data-date="${dayData.date}" data-period="${i}" value="${memo}" placeholder="여기를 터치하여 메모 작성"></td>`;
+    html += `<td ${bgColor}><textarea class="memo-input" data-date="${dayData.date}" data-period="${i}" placeholder="여기를 터치하여 메모 작성">${memo}</textarea></td>`;
     html += `</tr>`;
   }
   html += `</tbody></table>`;
