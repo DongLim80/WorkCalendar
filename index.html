@@ -37,13 +37,29 @@
     .view-btn.active { background: #4caf50; color: white; border-color: #4caf50; }
     .date-title { font-weight: 900; font-size: 14px; margin: 0 5px; color: #1f2937; }
 
-    /* 모바일 가로 짤림 방지를 위한 반응형 래퍼 */
-    .table-wrapper { width: 100%; overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .table-wrapper { 
+      width: 100%; 
+      background: white; 
+      border-radius: 8px; 
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08); 
+      overflow: visible; /* sticky가 정상 동작하도록 visible로 변경 */
+    }
     
     /* 주/일 공통 테이블 서식 */
     table { width: 100%; min-width: 100%; border-collapse: collapse; text-align: center; font-size: 14px; }
     th, td { border: 1px solid #cbd5e1; padding: 10px; }
-    th { background-color: #f1f5f9; font-weight: bold; color: #334155; }
+    th { 
+      background-color: #f1f5f9; 
+      font-weight: bold; 
+      color: #334155; 
+      border: 1px solid #cbd5e1;
+      padding: 10px;
+    
+      /* 네비게이션 바 바로 아래에 고정 */
+      position: sticky;
+      top: 52px; /* 상단 컨트롤 바의 실제 높이만큼 아래에 딱 붙임 */
+      z-index: 90;
+    }
     
     /* 메모 입력칸 서식 (textarea 대응 수정) */
     .memo-input {
