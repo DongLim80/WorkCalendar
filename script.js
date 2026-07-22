@@ -253,10 +253,11 @@ function renderMonth(dataList) {
     
     let classStrs = [];
     for(let i=1; i<=6; i++) {
-      if(dayData.classes[i]) classStrs.push(`${i}교시:${dayData.classes[i]}`);
+      if(dayData.classes[i]) classStrs.push(`${i}:${dayData.classes[i]}`);
     }
     if(classStrs.length > 0) {
-      html += `<div class="cal-class">${classStrs.join('<br>')}</div>`;
+      // <br> 대신 공백으로 연결하여 한 줄로 잇고, 스타일로 줄바꿈 방지 적용
+      html += `<div class="cal-class" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 10px;">${classStrs.join(' ')}</div>`;
     }
     
     html += `</div>`;
