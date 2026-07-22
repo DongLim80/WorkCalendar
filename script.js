@@ -220,14 +220,21 @@ function renderDay(dataList) {
 // [월 보기] 캘린더 그리드 레이아웃 렌더링
 // ============================================
 function renderMonth(dataList) {
-  let html = `<div class="cal-grid">`;
-  const days = ['일','월','화','수','목','금','토'];
+  // 1. 그리드를 7열(일~토)에서 5열(월~금)로 변경하기 위해 CSS 스타일이나 구조를 맞춤
+  let html = `<div class="cal-grid" style="grid-template-columns: repeat(5, 1fr);">`;
+  
+  // 2. 월~금 요일 헤더만 생성
+  const days = ['월','화','수','목','금'];
   days.forEach(d => {
     html += `<div class="cal-header">${d}</div>`;
   });
 
   dataList.forEach(dayData => {
     let d = new Date(dayData.date);
+    
+    // 3. 토요일(6)과 일요일(0)은 월 보기 그리드에서 제외
+    if (d.getDay() === 0 || d.getDay() === 6) return;
+
     let isCurrentMonth = d.getMonth() === currentDate.getMonth();
     let isToday = dayData.date === formatDate(new Date());
     let clsName = 'cal-cell';
