@@ -168,6 +168,8 @@ function renderWeek(dataList) {
 // ============================================
 function renderDay(dataList) {
   const dayData = dataList[0];
+  // 1. 메모가 없을 때 undefined가 뜨지 않도록 안전하게 변수 처리
+  const memoText = (dayData.memos && dayData.memos[i]) ? dayData.memos[i] : '';
   let html = `<table class="day-table">
     <thead>
       <tr>
@@ -189,7 +191,8 @@ function renderDay(dataList) {
     
     html += `<td ${bgColor}>${i}교시</td>`;
     html += `<td ${bgColor}>${cls}</td>`;
-    html += `<td ${bgColor}><textarea class="memo-input" data-date="${dayData.date}" data-period="${i}" placeholder="여기를 터치하여 메모 작성">${memo}</textarea></td>`;
+    // 2. <textarea> 오프닝/클로징 태그 사이를 바짝 붙여서 한 줄로 작성
+    html += `<td ${bgColor}><textarea class="memo-input" data-date="${dayData.date}" data-period="${i}" placeholder="여기를 터치하여 메모 작성">${memoText}</textarea></td>`;
     html += `</tr>`;
   }
   html += `</tbody></table>`;
