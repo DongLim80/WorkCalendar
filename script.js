@@ -4,9 +4,15 @@
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbztEDUhTVL_1zXG-r69oPNkpG10AgxAxtUbhzBzhV9TQ0y_RBdV5Q-K4MVn0NKEbZCy/exec";
 
 let currentDate = new Date();
-let currentView = 'week'; // 기본 보기는 '주'
+// 저장된 보기 모드가 있으면 가져오고, 없으면 기본값 'week' 사용
+let currentView = localStorage.getItem('selectedView') || 'week';
 
 document.addEventListener("DOMContentLoaded", () => {
+  // 저장된 뷰 모드 버튼에 active 클래스 적용
+  document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+  const activeBtn = document.getElementById(`btn-${currentView}`);
+  if (activeBtn) activeBtn.classList.add('active');
+
   updateHeaderTitle();
   fetchSchedule();
   setupMemoListener();
@@ -32,6 +38,8 @@ function navigate(dir) {
 // 뷰 전환: 월, 주, 일
 function changeView(view) {
   currentView = view;
+  localStorage.setItem('selectedView', view); // 선택한 보기 모드를 브라우저에 저장!
+
   document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
   document.getElementById(`btn-${view}`).classList.add('active');
   updateHeaderTitle();
