@@ -140,9 +140,11 @@ function renderWeek(dataList) {
     for (let i = 1; i <= 6; i++) {
       html += `<tr>`;
       if (i === 1) {
-        html += `<td rowspan="6" class="date-cell">${dayData.month}월</td>`;
-        html += `<td rowspan="6" class="date-cell">${dayData.day}일</td>`;
-        html += `<td rowspan="6" class="date-cell">${dayData.dayOfWeek}</td>`;
+        // '월', '일', '요일'을 하나의 셀 안에 <br>로 줄바꿈하여 통합 표시
+        html += `<td class="date-cell" style="text-align: center; vertical-align: middle;">`;
+        html += `${dayData.month}월<br>${dayData.day}일<br>${dayData.dayOfWeek}`;
+        html += `</td>`;
+        
         html += `<td rowspan="6" class="event-cell">${dayData.academicEvent || ''}</td>`;
       }
       
