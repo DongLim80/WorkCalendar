@@ -165,7 +165,7 @@ function renderWeek(dataList) {
       else if(cls.startsWith('4')) bgColor = 'style="background-color: #fff9c4;"';
       
       html += `<td ${bgColor}>${i}</td>`;
-      html += `<td ${bgColor}>${cls}</td>`;
+      html += `<td ${bgColor} class="class-cell">${cls}</td>`;
       html += `<td ${bgColor}><textarea class="memo-input" data-date="${dayData.date}" data-period="${i}" placeholder="여기를 터치하여 메모 작성">${memo}</textarea></td>`;
       html += `</tr>`;
     }
@@ -208,7 +208,7 @@ function renderDay(dataList) {
     else if(cls.startsWith('4')) bgColor = 'style="background-color: #fff9c4;"';
       
     html += `<td ${bgColor}>${i}교시</td>`;
-    html += `<td ${bgColor}>${cls}</td>`;
+    html += `<td ${bgColor} class="class-cell">${cls}</td>`;
     html += `<td ${bgColor}><textarea class="memo-input" data-date="${dayData.date}" data-period="${i}" placeholder="여기를 터치하여 메모 작성">${memo}</textarea></td>`;
     html += `</tr>`;
   }
@@ -317,27 +317,27 @@ function setupMemoListener() {
 }
 
 function autoFitTextSize() {
-  // 테이블 내의 모든 <td> 및 메모 입력창(textarea)을 대상으로 줄바꿈 방지 및 폰트 자동 축소 적용
-  document.querySelectorAll('table td, .memo-input').forEach(el => {
-    // 셀 내부의 텍스트 길이 계산 (textarea인 경우 value 기준)
-    let textLength = (el.tagName === 'TEXTAREA' ? el.value : el.innerText).trim().length;
-    
+  // 수업 칸 및 테이블 내 주요 셀 대상 폰트 자동 축소 및 한 줄 강제
+  document.querySelectorAll('.class-cell, .date-cell, table td').forEach(cell => {
+    // textarea는 제외 (textarea는 높이 자동 조절을 사용하므로)
+    if (cell.querySelector('textarea')) return;
+
+    let textLength = cell.innerText.trim().length;
+
     // 강제로 한 줄 출력을 유지하기 위한 스타일 적용
-    el.style.whiteSpace = 'nowrap';
-    el.style.overflow = 'hidden';
-    el.style.textOverflow = 'ellipsis';
-    
+    cell.style.whiteSpace = 'nowrap';
+    cell.style.overflow = 'hidden';
+    cell.style.textOverflow = 'ellipsis';
+
     // 글자 길이에 따른 단계별 폰트 크기 동적 축소
-    if (textLength > 25) {
-      el.style.fontSize = '8px';
-    } else if (textLength > 18) {
-      el.style.fontSize = '9px';
-    } else if (textLength > 12) {
-      el.style.fontSize = '10px';
+    if (textLength > 15) {
+      cell.style.fontSize = '8px';
+    } else if (textLength > 10) {
+      cell.style.fontSize = '9px';
     } else if (textLength > 6) {
-      el.style.fontSize = '11px';
+      cell.style.fontSize = '10px';
     } else {
-      el.style.fontSize = '12px'; // 기본 크기
+      cell.style.fontSize = '12px'; // 기본 크기
     }
   });
 }
