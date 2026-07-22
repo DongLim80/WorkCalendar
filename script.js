@@ -244,6 +244,16 @@ function renderMonth(dataList) {
 // 메모 입력 시 구글 시트로 POST 저장 동기화 이벤트
 // ============================================
 function setupMemoListener() {
+  // 1. 글을 입력할 때마다 textarea 높이를 자동으로 조절해주는 이벤트 (새로 추가)
+  document.addEventListener('input', (e) => {
+    if (e.target.classList.contains('memo-input')) {
+      const textarea = e.target;
+      textarea.style.height = 'auto'; // 높이 초기화 후 내용물 크기 재계산
+      textarea.style.height = (textarea.scrollHeight) + 'px'; // 실제 내용 높이만큼 적용
+    }
+  });
+
+  // 2. 기존 포커스 해제(change) 시 구글 시트 저장 동기화 이벤트
   document.addEventListener('change', (e) => {
     if (e.target.classList.contains('memo-input')) {
       const input = e.target;
