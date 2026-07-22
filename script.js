@@ -126,12 +126,12 @@ function renderData(dataList) {
 // ============================================
 function renderWeek(dataList) {
   let html = `<table class="week-table">
-    <thead>
-      <tr>
-        <th width="8%">월</th><th width="8%">일</th><th width="8%">요일</th><th width="20%">일정</th><th width="8%">교시</th><th width="15%">수업</th><th width="33%">메모</th>
-      </tr>
-    </thead>
-    <tbody>`;
+  <thead>
+    <tr>
+      <th width="12%">날짜</th><th width="20%">일정</th><th width="8%">교시</th><th width="15%">수업</th><th width="45%">메모</th>
+    </tr>
+  </thead>
+  <tbody>`;
   
   dataList.forEach(dayData => {
     let d = new Date(dayData.date);
@@ -140,9 +140,7 @@ function renderWeek(dataList) {
     for (let i = 1; i <= 6; i++) {
       html += `<tr>`;
       if (i === 1) {
-        html += `<td rowspan="6" class="date-cell">${dayData.month}월</td>`;
-        html += `<td rowspan="6" class="date-cell">${dayData.day}일</td>`;
-        html += `<td rowspan="6" class="date-cell">${dayData.dayOfWeek}</td>`;
+        html += `<td rowspan="6" class="date-cell" style="text-align: center; vertical-align: middle;">${dayData.month}월<br>${dayData.day}일<br>${dayData.dayOfWeek}</td>`;
         html += `<td rowspan="6" class="event-cell">${dayData.academicEvent || ''}</td>`;
       }
       
